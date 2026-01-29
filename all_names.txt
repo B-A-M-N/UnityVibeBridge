@@ -1,6 +1,0 @@
-Cube
-Directional Light
-ExtoPc
-ExtoPc_Snapshot [VibeAgent:c42190c1]
-Main Camera
-nadena.dev.ndmf__Activator

@@ -51,4 +51,11 @@ logs/
 *.log
 
 # Submodules/External
+
 alcom-tools/
+
+
+
+# Avatar-Specific Personal Tools
+
+personal_tools/
