@@ -1,7 +1,19 @@
 # 🌉 UnityVibeBridge
 
+> [!WARNING]
+> **EXPERIMENTAL & IN-DEVELOPMENT**  
+> This project is currently an active research prototype. APIs, security protocols, and core logic are subject to rapid, breaking changes. This software performs destructive mutations on Unity projects; **MANDATORY BACKUPS** are required before use.
+
 ### The "One-Click" Technical Artist for VRChat & World Building
 *A production-grade AI control interface for deterministic, undo-safe Unity Editor operations.*
+
+---
+
+## 🖼️ Previews
+
+| **Unity Bridge Interface** | **AI Logic & Security Gate** |
+| :---: | :---: |
+| ![Unity Bridge](captures/preview_ui_1.png) | ![Security Gate](captures/preview_ui_2.png) |
 
 ---
 
