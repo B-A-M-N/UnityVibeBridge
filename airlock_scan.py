@@ -2,6 +2,7 @@ import os
 import shutil
 import json
 import hashlib
+import subprocess
 from datetime import datetime
 from security_gate import SecurityGate
 
@@ -10,19 +11,28 @@ STAGING_DIR = "airlock/staging"
 QUARANTINE_DIR = "airlock/quarantine"
 REPORTS_DIR = "airlock/reports"
 
-def get_file_hash(path):
-    """Generates SHA-256 hash for a file."""
-    sha256_hash = hashlib.sha256()
-    with open(path, "rb") as f:
-        for byte_block in iter(lambda: f.read(4096), b""):
-            sha256_hash.update(byte_block)
-    return sha256_hash.hexdigest()
+def run_bandit_scan(file_path):
+    """Runs a Bandit security scan on a Python file."""
+    try:
+        # -q: quiet, -f json: output json
+        result = subprocess.run(
+            ["bandit", "-q", "-f", "json", file_path],
+            capture_output=True,
+            text=True
+        )
+        if result.stdout:
+            data = json.loads(result.stdout)
+            # Extract issue descriptions
+            return [f"Bandit ({i['issue_severity']}): {i['issue_text']}" for i in data.get("results", [])]
+    except Exception as e:
+        return [f"Bandit Error: {str(e)}"]
+    return []
 
 def scan_staging():
     """Scans all files in the staging directory and takes action based on security audit."""
-    print(f"[*] Starting Airlock Scan at {datetime.now().isoformat()}")
+    print(f"[*] Starting Augmented Airlock Scan at {datetime.now().isoformat()}")
     
-    # Ensure directories exist (redundant but safe)
+    # Ensure directories exist
     for d in [STAGING_DIR, QUARANTINE_DIR, REPORTS_DIR]:
         os.makedirs(d, exist_ok=True)
 
@@ -34,9 +44,7 @@ def scan_staging():
             file_path = os.path.join(root, file)
             rel_path = os.path.relpath(file_path, STAGING_DIR)
             
-            # Skip hidden files
-            if file.startswith('.'):
-                continue
+            if file.startswith('.'): continue
 
             print(f"[*] Auditing: {rel_path}")
             files_processed += 1
@@ -48,13 +56,16 @@ def scan_staging():
                 with open(file_path, 'r', encoding='utf-8', errors='replace') as f:
                     content = f.read()
                 
+                # 1. Internal Security Gate (Custom Rules)
                 if ext == '.py':
-                    issues = SecurityGate.check_python(content)
+                    issues.extend(SecurityGate.check_python(content))
+                    # 2. Augmented Bandit Scan (Standard Rules)
+                    print(f"[*] Running Bandit scan on {file}...")
+                    issues.extend(run_bandit_scan(file_path))
                 elif ext == '.cs':
-                    issues = SecurityGate.check_csharp(content)
+                    issues.extend(SecurityGate.check_csharp(content))
                 else:
-                    # Generic secret scan for other text-based files
-                    issues = SecurityGate._check_secrets(content)
+                    issues.extend(SecurityGate._check_secrets(content))
                 
                 # Generate Report
                 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
