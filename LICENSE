@@ -42,12 +42,15 @@ By contributing code, documentation, or assets to this project, you hereby grant
 
 ---
 
-## 4. LIABILITY LIMITATION & AI DISCLAIMER (THE "DESTRUCTIVE ENGINE" CLAUSE)
+## 4. LIABILITY LIMITATION, INDEMNITY & AI DISCLAIMER
 
-1. **NO WARRANTY**: This software is provided "AS IS." The Author makes no representations concerning the safety of AI-interpreted operations.
-2. **AI NON-DETERMINISM**: This software interprets natural language via LLMs into Unity Editor operations. Because AI is non-deterministic, the Author is not responsible for unintended mutations, asset loss, or "hallucination drift."
-3. **MANDATORY BACKUPS**: User assumes all risk for project corruption. You are REQUIRED to maintain external backups and use the built-in transaction system to verify changes.
-4. **LIMITATION OF LIABILITY**: In no event shall the Author be liable for any damages (including loss of data or profits) arising from the use of this software.
+1. **NO WARRANTY**: This software is provided "AS IS." The Author makes no representations concerning the safety, stability, or non-destructive nature of AI-interpreted operations.
+2. **AI NON-DETERMINISM**: This software translates natural language via LLMs into Unity Editor mutations. AI is non-deterministic; the Author is not liable for "hallucination drift," unintended asset deletion, or project corruption resulting from AI interpretation.
+3. **HUMAN-IN-THE-LOOP MANDATE**: All AI-suggested mutations are considered "Proposed" until a Human User executes a "Finalize" or "Undo" check. THE USER ACCEPTS FULL LEGAL AND TECHNICAL RESPONSIBILITY FOR ANY CODE OR MUTATION THEY ALLOW THE AI TO EXECUTE.
+4. **INDEMNIFICATION**: You agree to indemnify, defend, and hold harmless the Author from and against any and all claims, liabilities, damages, and expenses (including attorney fees) arising from your use of the software, your breach of this license, or any assets produced using this software.
+5. **PLATFORM COMPLIANCE (VRChat/Unity)**: The Author is NOT responsible for any violations of Third-Party Terms of Service (e.g., VRChat TOS, Unity EULA). Use of this tool to modify avatars or worlds is at the User's sole risk regarding platform bans or content removal.
+6. **HIGH-RISK USE PROHIBITION**: This software is NOT intended for use in any environment where failure could lead to death, personal injury, or severe physical/environmental damage.
+7. **LIMITATION OF LIABILITY**: TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES (INCLUDING LOSS OF DATA, PROFITS, OR "VIBE") ARISING OUT OF THE USE OR INABILITY TO USE THIS SOFTWARE.
 
 ---
 *For licensing inquiries or to request a Discretionary Waiver, please open an issue or contact the Author.*
