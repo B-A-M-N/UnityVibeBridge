@@ -16,14 +16,34 @@ from security_gate import SecurityGate
 
 # --- CORE SERVER INITIALIZATION ---
 mcp = FastMCP("UnityVibeBridge")
-UNITY_PROJECT_PATH = "/home/bamn/ALCOM/Projects/BAMN-EXTO"
+UNITY_PROJECT_PATH = os.getcwd() # Default to current directory
 QUEUE_PATH = os.path.join(UNITY_PROJECT_PATH, "vibe_queue")
 INBOX_PATH = os.path.join(QUEUE_PATH, "inbox")
 OUTBOX_PATH = os.path.join(QUEUE_PATH, "outbox")
 
-# Ensure paths exist
-for p in [INBOX_PATH, OUTBOX_PATH]:
-    if not os.path.exists(p): os.makedirs(p)
+def ensure_project_infrastructure():
+    """
+    Auto-Initialization: Creates the necessary 'Airlock' directories 
+    to ensure project-specific data is isolated and organized.
+    """
+    DIRS = [
+        INBOX_PATH, 
+        OUTBOX_PATH, 
+        os.path.join(UNITY_PROJECT_PATH, "metadata"),
+        os.path.join(UNITY_PROJECT_PATH, "captures"),
+        os.path.join(UNITY_PROJECT_PATH, "logs"),
+        os.path.join(UNITY_PROJECT_PATH, "optimizations")
+    ]
+    for d in DIRS:
+        if not os.path.exists(d):
+            try:
+                os.makedirs(d)
+                # Note: We don't print to avoid cluttering MCP transport, 
+                # but it ensures the 'Airlock' is ready.
+            except: pass
+
+# Run infrastructure check immediately
+ensure_project_infrastructure()
 
 def unity_request(method, path, params=None, is_mutation=False):
     """Secure wrapper for Unity requests via AIRLOCK (JSON Queue)."""
