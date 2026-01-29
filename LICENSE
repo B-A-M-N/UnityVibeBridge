@@ -1,0 +1,45 @@
+GNU AFFERO GENERAL PUBLIC LICENSE
+Version 3, 19 November 2007
+
+Copyright (C) 2026 [Your Name/Project Name]
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+---
+
+### ADDITIONAL COMMERCIAL TERMS & MAINTENANCE WAIVER (v1.0)
+
+Pursuant to Section 7 of the GNU Affero General Public License, Version 3, the following additional terms apply to all Commercial Use of the Software:
+
+1. DEFINITIONS: "Commercial Use" refers to any use of the software by an entity generating revenue, or use of the software to produce assets intended for sale or commercial distribution.
+
+2. THE "WORK OR PAY" MODEL: Commercial Users are required to either:
+   a. Pay the stipulated Commercial License Fee (contact [Email/Link] for current rates); OR
+   b. Earn a fee waiver through documented "Significant Maintenance Contributions" (including but not limited to code contributions, documentation, or infrastructure support) as verified by the Author.
+
+3. DISCRETIONARY WAIVER: The Author reserves the exclusive and absolute right to waive any fees, maintenance requirements, or commercial restrictions for any individual or entity, for any reason, at the Author’s sole discretion.
+
+4. CONTRIBUTOR LICENSE AGREEMENT (CLA): By contributing code, documentation, or other assets to this project, you hereby grant the Author a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable copyright license to reproduce, prepare derivative works of, publicly display, publicly perform, sublicense, and distribute your contributions and such derivative works in both open-source and commercial versions of the software.
+
+---
+
+### WARNING: EXPERIMENTAL DESTRUCTIVE MUTATION ENGINE & LIABILITY LIMITATION
+
+1. NO WARRANTY: THIS SOFTWARE IS PROVIDED "AS IS" AND "WITH ALL FAULTS." THE AUTHOR MAKES NO REPRESENTATIONS OR WARRANTIES OF ANY KIND CONCERNING THE SAFETY, SUITABILITY, OR ACCURACY OF THE OPERATIONS PERFORMED BY THE AI AGENTS HEREIN.
+
+2. AI NON-DETERMINISM: USER ACKNOWLEDGES THAT THIS SOFTWARE UTILIZES LARGE LANGUAGE MODELS (LLMS) TO INTERPRET NATURAL LANGUAGE INTENTS INTO UNITY EDITOR OPERATIONS. BECAUSE AI IS NON-DETERMINISTIC, THE SAME REQUEST MAY PRODUCE DIFFERENT RESULTS. THE AUTHOR IS NOT RESPONSIBLE FOR "HALLUCINATION DRIFT" OR UNINTENDED MUTATIONS RESULTING FROM AI INTERPRETATION.
+
+3. MANDATORY BACKUPS: USER ASSUMES ALL RISK FOR PROJECT CORRUPTION, ASSET LOSS, OR METADATA DESTRUCTION. IT IS THE USER'S SOLE RESPONSIBILITY TO MAINTAIN EXTERNAL BACKUPS AND TO UTILIZE THE BUILT-IN TRANSACTION/ROLLBACK SYSTEM TO VERIFY ALL MUTATIONS BEFORE COMMITTING CHANGES TO THE ASSETDATABASE.
+
+4. LIMITATION OF LIABILITY: IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, LOSS OF USE, DATA, OR PROFITS) ARISING OUT OF THE USE OR INABILITY TO USE THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

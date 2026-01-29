@@ -1,0 +1,37 @@
+# --- STAGE 1: Build the Goose CLI ---
+FROM rust:1.82-bookworm AS builder
+WORKDIR /build
+COPY alcom-tools/ .
+RUN cargo build --release --package goose-cli
+
+# --- STAGE 2: Final Sandbox Environment ---
+FROM python:3.11-slim-bookworm
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    libssl3 \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy Goose CLI
+COPY --from=builder /build/target/release/goose /usr/local/bin/goose
+
+# Setup Python environment
+# We install dependencies here, but we will run the server script from the mount.
+RUN pip install --no-cache-dir mcp[cli] requests
+
+# Create non-root user
+RUN useradd -m -u 1000 -s /bin/bash sandbox && \
+    mkdir -p /home/sandbox/.config/goose && \
+    chown -R sandbox:sandbox /home/sandbox
+
+ENV PATH="/usr/local/bin:${PATH}"
+ENV HOME="/home/sandbox"
+
+USER sandbox
+WORKDIR /workspace
+
+# ENTRYPOINT: Run goose session with the MCP server located in the project's mcp-server/ directory.
+ENTRYPOINT ["goose", "session", "--with-server", "python3 mcp-server/server.py"]

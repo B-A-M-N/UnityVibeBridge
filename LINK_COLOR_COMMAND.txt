@@ -1,0 +1,36 @@
+# Command to set ALL Linked Accents to a specific color (VAR_COLOR)
+# Replace VAR_COLOR with r,g,b,a (e.g., 0,0,1,1 for Blue)
+
+# 1. Horns (Body Slot 1 - Metal)
+curl -s "http://localhost:8085/material/set-slot-color?path=27980&index=1&field=_Color&value=VAR_COLOR"
+curl -s "http://localhost:8085/material/set-slot-color?path=27980&index=1&field=_EmissionColor&value=VAR_COLOR"
+
+# 2. Facial/Ear Piercings (Head Slot 3 - Metal)
+curl -s "http://localhost:8085/material/set-slot-color?path=28714&index=3&field=_Color&value=VAR_COLOR"
+
+# 3. Body Ears (Body Slot 0)
+curl -s "http://localhost:8085/material/set-slot-color?path=27980&index=0&field=_Color&value=VAR_COLOR"
+
+# 4. Body Piercings (Body Slot 1)
+curl -s "http://localhost:8085/material/set-slot-color?path=27980&index=1&field=_Color&value=VAR_COLOR"
+
+# 4b. Body Tattoos (Body Slot 2 - Emission)
+curl -s "http://localhost:8085/material/set-slot-color?path=27980&index=2&field=_EmissionColor&value=VAR_COLOR"
+
+# 5. Skeleton Hoodie (Hoodie Slot 0)
+curl -s "http://localhost:8085/material/set-slot-color?path=27952&index=0&field=_Color&value=VAR_COLOR"
+
+# 6. Body Harness (Harness Slot 0)
+curl -s "http://localhost:8085/material/set-slot-color?path=27940&index=0&field=_Color&value=VAR_COLOR"
+
+# 7. Chains (Chains Slot 0)
+curl -s "http://localhost:8085/material/set-slot-color?path=27338&index=0&field=_Color&value=VAR_COLOR"
+
+# 8. Pants Accent (Pants Slot 1)
+curl -s "http://localhost:8085/material/set-slot-color?path=27310&index=1&field=_Color&value=VAR_COLOR"
+
+# 9. Belt Accent (Belt Slot 1)
+curl -s "http://localhost:8085/material/set-slot-color?path=27532&index=1&field=_Color&value=VAR_COLOR"
+
+# 10. Boots Accent (Boots Slot 3)
+curl -s "http://localhost:8085/material/set-slot-color?path=28350&index=3&field=_Color&value=VAR_COLOR"

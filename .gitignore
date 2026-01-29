@@ -1,0 +1,54 @@
+# Unity Junk
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+*.csproj
+*.sln
+*.userprefs
+*.pidb
+*.suo
+
+# OS Junk
+.DS_Store
+Thumbs.db
+
+# Python Junk
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# UnityVibeBridge Infrastructure
+trusted_signatures.json
+vibe_registry.json
+metadata/vibe_registry.json
+metadata/current_hierarchy.json
+metadata/*.json
+!metadata/vibe_settings.json
+
+# Vibe Queue & Airlock
+vibe_queue/inbox/*
+vibe_queue/outbox/*
+airlock/staging/*
+airlock/quarantine/*
+airlock/reports/*
+airlock/cleared/*
+!*/.gitkeep
+
+# Security Artifacts
+.gemini_security/
+security_tests/__pycache__/
+
+# Visual History
+captures/*.png
+captures/*.jpg
+
+# Logs
+logs/
+*.log
+
+# Submodules/External
+alcom-tools/
