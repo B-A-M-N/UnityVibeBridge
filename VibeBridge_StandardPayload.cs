@@ -1,3 +1,16 @@
+// UnityVibeBridge: The Governed Creation Kernel for Unity
+// Copyright (C) 2026 B-A-M-N
+//
+// This software is dual-licensed under the GNU AGPLv3 and a 
+// Commercial "Work-or-Pay" Maintenance Agreement.
+//
+// You may use this file under the terms of the AGPLv3, provided 
+// you meet all requirements (including source disclosure).
+//
+// For commercial use, or to keep your modifications private, 
+// you must satisfy the requirements of the Commercial Path 
+// as defined in the LICENSE file at the project root.
+
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
@@ -224,6 +237,21 @@ namespace VibeBridge {
             var all = UnityEngine.Object.FindObjectsOfType<GameObject>(true);
             var results = all.Where(go => go.GetComponent(typeName) != null)
                 .Select(go => new BasicRes { message = go.name, id = go.GetInstanceID() }).ToArray();
+            return JsonUtility.ToJson(new FindRes { results = results });
+        }
+
+        public static string VibeTool_system_search(Dictionary<string, string> q) {
+            string pattern = q.ContainsKey("name") ? q["name"] : "";
+            int layer = q.ContainsKey("layer") ? int.Parse(q["layer"]) : -1;
+            
+            var all = UnityEngine.Object.FindObjectsOfType<GameObject>(true);
+            var results = all.Where(go => {
+                bool match = true;
+                if (!string.IsNullOrEmpty(pattern)) match = System.Text.RegularExpressions.Regex.IsMatch(go.name, pattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                if (layer != -1) match = match && go.layer == layer;
+                return match;
+            }).Take(100).Select(go => new BasicRes { message = go.name, id = go.GetInstanceID() }).ToArray();
+            
             return JsonUtility.ToJson(new FindRes { results = results });
         }
 

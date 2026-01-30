@@ -1,3 +1,16 @@
+// UnityVibeBridge: The Governed Creation Kernel for Unity
+// Copyright (C) 2026 B-A-M-N
+//
+// This software is dual-licensed under the GNU AGPLv3 and a 
+// Commercial "Work-or-Pay" Maintenance Agreement.
+//
+// You may use this file under the terms of the AGPLv3, provided 
+// you meet all requirements (including source disclosure).
+//
+// For commercial use, or to keep your modifications private, 
+// you must satisfy the requirements of the Commercial Path 
+// as defined in the LICENSE file at the project root.
+
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
@@ -119,18 +132,40 @@ namespace VibeBridge {
         public static string ExecuteAirlockCommand(AirlockCommand cmd) {
             try {
                 if (!string.IsNullOrEmpty(cmd.capability) && !cmd.capability.Equals("read", StringComparison.OrdinalIgnoreCase)) {
-                    if (!IsSafeToMutate()) return "{\"error\":\"UNSAFE_STATE\"}";
+                    if (!IsSafeToMutate()) return JsonUtility.ToJson(new BasicRes { error = "UNSAFE_STATE" });
                     ValidateSanity(cmd);
                 }
                 string path = cmd.action.TrimStart('/');
                 string methodName = "VibeTool_" + path.Replace("/", "_").Replace("-", "_");
                 if (path == "inspect") methodName = "VibeTool_inspect";
                 var method = typeof(VibeBridgeServer).GetMethod(methodName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.IgnoreCase);
-                if (method == null) return "{\"error\":\"Tool not found: " + path + "\"}";
+                if (method == null) return JsonUtility.ToJson(new BasicRes { error = "Tool not found: " + path });
                 var query = new Dictionary<string, string>();
                 if (cmd.keys != null && cmd.values != null) for (int i = 0; i < Math.Min(cmd.keys.Length, cmd.values.Length); i++) query[cmd.keys[i]] = cmd.values[i];
                 return (string)method.Invoke(null, new object[] { query });
-            } catch (Exception e) { return "{\"error\":\"" + e.Message + "\"}"; }
+            } catch (Exception e) { return JsonUtility.ToJson(new BasicRes { error = e.Message }); }
+        }
+
+        public static string VibeTool_object_set_value(Dictionary<string, string> q) {
+            GameObject go = Resolve(q["path"]);
+            if (go == null) return JsonUtility.ToJson(new BasicRes { error = "Object not found" });
+            string compName = q["component"], fieldName = q["field"], val = q["value"];
+            Component c = go.GetComponent(compName);
+            if (c == null) return JsonUtility.ToJson(new BasicRes { error = "Component not found" });
+            
+            Undo.RecordObject(c, "Set Value");
+            var type = c.GetType();
+            var field = type.GetField(fieldName, BindingFlags.Public | BindingFlags.Instance);
+            var prop = type.GetProperty(fieldName, BindingFlags.Public | BindingFlags.Instance);
+
+            try {
+                if (field != null) {
+                    field.SetValue(c, Convert.ChangeType(val, field.FieldType));
+                } else if (prop != null && prop.CanWrite) {
+                    prop.SetValue(c, Convert.ChangeType(val, prop.PropertyType));
+                } else return JsonUtility.ToJson(new BasicRes { error = "Field/Property not found or read-only" });
+                return JsonUtility.ToJson(new BasicRes { message = "Value updated" });
+            } catch (Exception e) { return JsonUtility.ToJson(new BasicRes { error = e.Message }); }
         }
 
         public static string VibeTool_status(Dictionary<string, string> q) { return "{\"status\":\"connected\",\"kernel\":\"v1.1\"}"; }
@@ -288,21 +323,36 @@ namespace VibeBridge {
             lock (_httpQueue) {
                 if (_httpQueue.Count == 0) return;
                 
-                // Time-Budgeting: Process for max 5ms to keep Editor at ~200fps
                 var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-                while (_httpQueue.Count > 0 && stopwatch.ElapsedMilliseconds < 5) {
-                    var c = _httpQueue.Dequeue();
-                    string action = c.Request.Url.AbsolutePath.TrimStart('/');
-                    var cmd = new AirlockCommand { 
-                        action = action, 
-                        keys = c.Request.QueryString.AllKeys, 
-                        values = c.Request.QueryString.AllKeys.Select(k => c.Request.QueryString[k]).ToArray() 
-                    };
-                    string res = ExecuteAirlockCommand(cmd); 
-                    byte[] buf = System.Text.Encoding.UTF8.GetBytes(res); 
-                    c.Response.ContentLength64 = buf.Length; 
-                    c.Response.OutputStream.Write(buf, 0, buf.Length); 
-                    c.Response.Close();
+                try {
+                    AssetDatabase.StartAssetEditing();
+                    while (_httpQueue.Count > 0 && stopwatch.ElapsedMilliseconds < 5) {
+                        var c = _httpQueue.Dequeue();
+                        
+                        // Security: Token Verification
+                        string incomingToken = c.Request.Headers["X-Vibe-Token"];
+                        if (string.IsNullOrEmpty(incomingToken) || incomingToken != _persistentNonce) {
+                            c.Response.StatusCode = 401;
+                            byte[] err = System.Text.Encoding.UTF8.GetBytes("{\"error\":\"Unauthorized: Missing or invalid token\"}");
+                            c.Response.OutputStream.Write(err, 0, err.Length);
+                            c.Response.Close();
+                            continue;
+                        }
+
+                        string action = c.Request.Url.AbsolutePath.TrimStart('/');
+                        var cmd = new AirlockCommand { 
+                            action = action, 
+                            keys = c.Request.QueryString.AllKeys, 
+                            values = c.Request.QueryString.AllKeys.Select(k => c.Request.QueryString[k]).ToArray() 
+                        };
+                        string res = ExecuteAirlockCommand(cmd); 
+                        byte[] buf = System.Text.Encoding.UTF8.GetBytes(res); 
+                        c.Response.ContentLength64 = buf.Length; 
+                        c.Response.OutputStream.Write(buf, 0, buf.Length); 
+                        c.Response.Close();
+                    }
+                } finally {
+                    AssetDatabase.StopAssetEditing();
                 }
             }
         }

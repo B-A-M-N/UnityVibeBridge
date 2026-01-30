@@ -1,5 +1,18 @@
 #!/bin/bash
 
+# UnityVibeBridge: The Governed Creation Kernel for Unity
+# Copyright (C) 2026 B-A-M-N
+#
+# This software is dual-licensed under the GNU AGPLv3 and a 
+# Commercial "Work-or-Pay" Maintenance Agreement.
+#
+# You may use this file under the terms of the AGPLv3, provided 
+# you meet all requirements (including source disclosure).
+#
+# For commercial use, or to keep your modifications private, 
+# you must satisfy the requirements of the Commercial Path 
+# as defined in the LICENSE file at the project root.
+
 # UnityVibeBridge Sandbox Launcher
 # This script builds and runs the sandboxed Gemini/Goose agent.
 

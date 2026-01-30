@@ -1,3 +1,16 @@
+# UnityVibeBridge: The Governed Creation Kernel for Unity
+# Copyright (C) 2026 B-A-M-N
+#
+# This software is dual-licensed under the GNU AGPLv3 and a 
+# Commercial "Work-or-Pay" Maintenance Agreement.
+#
+# You may use this file under the terms of the AGPLv3, provided 
+# you meet all requirements (including source disclosure).
+#
+# For commercial use, or to keep your modifications private, 
+# you must satisfy the requirements of the Commercial Path 
+# as defined in the LICENSE file at the project root.
+
 import sys
 import os
 import requests
@@ -27,7 +40,26 @@ def ensure_infrastructure():
 ensure_infrastructure()
 
 def unity_request(path, params=None, is_mutation=False):
-    """Secure AIRLOCK IPC."""
+    """Secure AIRLOCK IPC with Token-Auth support."""
+    
+    # --- GET SESSION TOKEN ---
+    token = None
+    status_path = os.path.join(UNITY_PROJECT_PATH, "metadata", "vibe_status.json")
+    if os.path.exists(status_path):
+        try:
+            with open(status_path, "r") as f:
+                s = json.load(f)
+                token = s.get("nonce")
+        except: pass
+
+    # Try HTTP first for low-latency tools
+    try:
+        headers = {"X-Vibe-Token": token} if token else {}
+        resp = requests.get(f"http://127.0.0.1:8085/{path}", params=params, headers=headers, timeout=2)
+        if resp.status_code == 200:
+            return resp.json()
+    except: pass # Fallback to Airlock
+
     cmd_id = str(uuid.uuid4())
     payload = {
         "action": path,
@@ -127,6 +159,14 @@ def get_hierarchy() -> str:
     return str(unity_request("hierarchy"))
 
 @mcp.tool()
+def search_objects(name_pattern: str = None, layer: int = -1) -> str:
+    """Finds objects by Regex name pattern or Layer (limit 100)."""
+    p = {}
+    if name_pattern: p["name"] = name_pattern
+    if layer != -1: p["layer"] = layer
+    return str(unity_request("system/search", p))
+
+@mcp.tool()
 def inspect_object(path: str) -> str:
     """Returns components and state of a GameObject."""
     return str(unity_request("inspect", {"path": path}))
@@ -140,6 +180,11 @@ def select_object(path: str) -> str:
 def rename_object(path: str, new_name: str) -> str:
     """Renames a GameObject."""
     return str(unity_request("object/rename", {"path": path, "newName": new_name}, is_mutation=True))
+
+@mcp.tool()
+def set_value(path: str, component: str, field: str, value: str) -> str:
+    """Sets a field or property value on a component."""
+    return str(unity_request("object/set-value", {"path": path, "component": component, "field": field, "value": value}, is_mutation=True))
 
 @mcp.tool()
 def clone_object(path: str) -> str:
