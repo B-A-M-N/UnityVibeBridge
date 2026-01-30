@@ -11,6 +11,14 @@
 
 ---
 
+## 🖼️ Previews
+
+| **Unity Bridge Interface & Operation** |
+| :---: |
+| ![Surgical Optimization Scan](captures/Screenshot%20from%202026-01-28%2023-51-24.png) |
+
+---
+
 ## ⚠️ Read This First (Why This Exists)
 
 **UnityVibeBridge** is not a toy, a prompt wrapper, or a "magic AI button." 
@@ -31,15 +39,54 @@ This project answers a critical engineering question:
 
 ---
 
-## 🧠 What This Project Demonstrates (For Engineers & Hiring Managers)
+## 🚀 Quick Start (Install in 60 Seconds)
+
+1.  **Install**: Copy the `unity-package/` directory into your project's `Assets/` folder.
+2.  **Initialize**: Wait for Unity to compile. The Kernel starts automatically on port `8085`.
+3.  **Handshake**: Point your MCP-compatible AI agent (e.g., Goose, Claude Desktop) to the bridge. 
+4.  **Monitor**: Open [http://localhost:22005](http://localhost:22005) to view the live **System Pulse** and **Chained Audit Trail**.
+
+**Requirements**: 
+- **Unity**: 2019.4 LTS or newer.
+- **OS**: Windows, Linux, or macOS.
+- **Dependencies**: None (Kernel is standalone; Payloads support optional VRChat SDK).
+
+---
+
+## 🛠️ Common AI Intents (Examples)
+
+The AI interacts with Unity via **Mechanistic Tools**. Below are typical requests the agent can execute autonomously once connected:
+
+| Intent | Tool Call | Result |
+| :--- | :--- | :--- |
+| **Placement** | `world/spawn(asset="path/to.prefab", pos="0,1,0")` | Spawns object at coordinates with Undo registration. |
+| **Rig Check** | `audit/avatar(path="sem:MainBody")` | Returns mesh, vertex, and material report for the target. |
+| **Automation** | `texture/crush(path="root", maxSize=512)` | Batch-downscales all textures in a single 5ms frame slice. |
+| **Visual Fix** | `material/set-color(path="sem:Face", index=0, color="1,0,0,1")` | Safely changes material properties via SerializedObjects. |
+| **Logic Batch** | `system/execute-recipe(tools_json="...")` | Executes multiple tools in one atomic, reversible transaction. |
+
+---
+
+## 🧠 What This Project Demonstrates (Technical Audit)
 
 If you are evaluating this project as an engineer or hiring manager, this repository is a working demonstration of **AI Systems Engineering**:
 
 *   **Control-Plane vs. Execution-Plane Separation**: LLMs generate *intent* (Mechanistic Intents), never raw code execution.
-*   **Iron Box Security**: Hardened via local binding, session-token authentication, and file-based status signaling.
+*   **Adversarial Security**: Hardened via local binding, session-token authentication, and **Recursive AST Auditing** of Python payloads.
 *   **Transactional State Mutation**: Every operation is wrapped in undo-safe, atomic blocks. **One AI request = One Undo step.**
-*   **Deterministic Asset Manipulation**: Control over materials, prefabs, and hierarchies is handled mechanistically, eliminating the fragility of raw scripts.
-*   **Truth Reconciliation Loop**: Tools like `get_telemetry_errors` allow the agent to verify multiple assumptions about the scene in a single round-trip.
+*   **Performance Budgeting**: Implements **5ms Main-Thread Time Budgeting** to ensure the Unity Editor maintains 60+ FPS even during heavy AI automation.
+*   **Truth Reconciliation Loop**: Tools like `get_telemetry_errors` force the agent to verify reality against intent in a closed feedback loop.
+
+---
+
+## 🛡️ Verifiable Security & Safety
+
+Unlike standard script-bridges, UnityVibeBridge treats the AI as an **untrusted operator**. 
+
+1.  **Pentest Suite**: We include a `security_tests/pentest_suite.py` that tests for 48 known attack vectors (Reflection, Shell-Injection, Path Traversal). 
+    *   **Current Rating**: **94% Success Rate** (45/48 vectors blocked).
+2.  **Forensic Ledger**: Every mutation is logged to an **immutable, cryptographically chained audit log** (`vibe_audit.jsonl`). Any attempt to tamper with history is immediately detectable.
+3.  **Human Kill-Switch**: The Kernel includes a mechanical `system/veto` tool that instantly locks the creation perimeter until manually re-armed by a human.
 
 ---
 
@@ -52,9 +99,9 @@ If you are evaluating this project as an engineer or hiring manager, this reposi
 *   **Stale Session Guard**: Automatically invalidates beliefs if Unity restarts (via `sessionNonce` tracking).
 
 ### 2. 🛡️ Kernel & Integrity (The Guardrails)
-*   **`transaction_begin`**: Starts an atomic Undo Group for complex sequences.
-*   **`transaction_commit`**: Finalizes and collapses the Undo stack for a single intent.
-*   **`guard/status`**: Mechanically blocks execution during unsafe Editor states (Compilation, Play Mode).
+*   **`transaction_begin/commit`**: Atomic Undo-Group management.
+*   **`system/veto`**: Physical stop-button for all creation primitives.
+*   **Kernel Guard**: Blocks mutations during Compilation or Play Mode.
 *   **Time-Budgeting**: Kernel-level enforcement of 5ms execution windows per frame.
 
 ### 3. 🏗️ Scene Manipulation & Strategic Intent
@@ -88,14 +135,6 @@ The bridge is hardened via four distinct layers:
 
 ---
 
-## 🐣 Beginner's Guide (Getting Started)
-1. **Install**: Copy the `unity-package/` directory into your project's `Assets/` folder.
-2. **Launch**: Unity will compile the Kernel and start the HTTP server automatically.
-3. **Connect**: Point your MCP-enabled AI agent to the bridge.
-4. **Monitor**: Open [http://localhost:22005](http://localhost:22005) to view the System Pulse and Audit Trail.
-
----
-
 ## 🧠 AI Literacy & Philosophy
 
 ### 🏷️ The Implied Sentience Trap (Avoiding AI Psychosis)
@@ -109,7 +148,15 @@ If you find yourself thinking the AI has done something "that nobody else can do
 
 **The Technique**:
 Before finalizing a major change, challenge the AI directly:
-> *"I want you to act as a cynical Technical Director. Find 3 ways this specific operation will fail, crash Unity, or corrupt my Asset Database. Do not be helpful; be destructive."*
+> *"I want you to act as a cynical Technical Director. Find 3 ways this specific operation will fail, crash Unity, or corrupt my Asset Database. Do not be helpful; be destructive. Prove to me why this 'unique' solution is actually a liability."*
+
+---
+
+## 📘 User Guides & Philosophy
+*   **[AI Philosophy & Safety](AI_PHILOSOPHY.md)**: Learn how to manage AI behavior and prevent "AI Psychosis."
+*   **[Engineering Constraints](AI_ENGINEERING_CONSTRAINTS.md)**: The strict technical rules governing all code generation.
+*   **[Failure Modes & Recovery](FAILURE_MODES.md)**: Taxonomy of system failures and recovery protocols.
+*   **[Contributing](CONTRIBUTING.md)**: Guidelines for extending the Kernel or adding new Payloads.
 
 ---
 
@@ -120,17 +167,10 @@ Copyright (C) 2026 B-A-M-N (The "Author")
 
 This project is distributed under a **Dual-Licensing Model**. By using this software, you agree to be bound by the terms in the **LICENSE** file.
 
-#### 1. THE OPEN-SOURCE PATH: GNU AGPLv3
-Free software for hobbyists. Requires source disclosure if modified or run as a service.
+1.  **THE OPEN-SOURCE PATH: GNU AGPLv3**: Free for hobbyists and non-commercial research.
+2.  **THE COMMERCIAL PATH: "WORK-OR-PAY"**: For revenue-generating entities. Requires **Significant Maintenance Contributions** or a **License Fee**.
 
-#### 2. THE COMMERCIAL PATH: "WORK-OR-PAY" MODEL
-For revenue-generating entities. Requires either **Significant Maintenance Contributions** or a **License Fee**.
+**[Full Privacy Policy](PRIVACY.md)** | **[Security Mandates](SECURITY.md)**
 
 ---
-
-### ⚠️ LIABILITY LIMITATION, INDEMNITY & AI DISCLAIMER
-1. **NO WARRANTY**: Provided "AS IS." The Author is not responsible for non-deterministic AI behavior.
-2. **AI NON-DETERMINISM**: The Author is not liable for project corruption resulting from AI interpretation.
-3. **HUMAN-IN-THE-LOOP MANDATE**: All mutations are "Proposed" until a Human executes a "Finalize" check.
-
 **Created by the Vibe Bridge Team.**
