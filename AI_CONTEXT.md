@@ -46,25 +46,23 @@ Agents must follow a strict execution lifecycle to ensure state integrity:
 
 ### 2. 🛡️ Kernel & Integrity
 *   **`transaction_begin` / `commit` / `abort`**: Atomic Undo-Group management.
+*   **`system/execute-recipe`**: Atomic multi-tool batch execution.
 *   **`guard/status`**: Checks for unsafe states (Compiling, Playing).
 *   **Time-Budgeting**: Enforcement of 5ms slices (Automatic).
 
 ### 3. 🏗️ Scene Manipulation
 *   **`get_hierarchy`**: Recursive Scene graph mapping.
 *   **`system/search`**: Regex & Layer-based discovery.
+*   **`object/set-value`**: Generic reflection-based property mutation (Supports Vector3, Color).
 *   **`rename_object` / `reparent_object`**: Identity and hierarchy mutations.
 *   **`clone_object` / `delete_object`**: Lifecycle management.
 *   **`select_object`**: Focus-aware selection (Stealth framing).
 
 ### 4. 🎨 Technical Art & Optimization
-*   **`object/set-value`**: Generic reflection-based property mutation.
 *   **`material/list`**: Lists material slots on an object.
 *   **`material/inspect-properties`**: Returns all shader properties for a slot.
 *   **`material/set-color` / `set-texture`**: High-fidelity slot mutations.
-*   **`vram_footprint`**: numerical GPU memory audit.
-*   **`texture_crush`**: Batch max-size reduction.
-*   **`swap_to_quest_shaders`**: Mobile material transition.
-*   **`opt/fork`**: Non-destructive material isolation.
+*   **`material/set-float` / `toggle-keyword`**: Granular shader control.
 
 ### 5. 🔗 Pipeline & Infrastructure
 *   **`registry/add`**: Persists a semantic role (e.g. "MainBody") for an object.

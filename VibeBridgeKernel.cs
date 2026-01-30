@@ -160,11 +160,22 @@ namespace VibeBridge {
             var prop = type.GetProperty(fieldName, BindingFlags.Public | BindingFlags.Instance);
 
             try {
-                if (field != null) {
-                    field.SetValue(c, Convert.ChangeType(val, field.FieldType));
-                } else if (prop != null && prop.CanWrite) {
-                    prop.SetValue(c, Convert.ChangeType(val, prop.PropertyType));
-                } else return JsonUtility.ToJson(new BasicRes { error = "Field/Property not found or read-only" });
+                object parsedVal = null;
+                var targetType = field?.FieldType ?? prop?.PropertyType;
+
+                if (targetType == typeof(Vector3)) {
+                    var p = val.Split(',').Select(float.Parse).ToArray();
+                    parsedVal = new Vector3(p[0], p[1], p[2]);
+                } else if (targetType == typeof(Color)) {
+                    var p = val.Split(',').Select(float.Parse).ToArray();
+                    parsedVal = new Color(p[0], p[1], p[2], p.Length > 3 ? p[3] : 1f);
+                } else {
+                    parsedVal = Convert.ChangeType(val, targetType);
+                }
+
+                if (field != null) field.SetValue(c, parsedVal);
+                else prop.SetValue(c, parsedVal);
+                
                 return JsonUtility.ToJson(new BasicRes { message = "Value updated" });
             } catch (Exception e) { return JsonUtility.ToJson(new BasicRes { error = e.Message }); }
         }

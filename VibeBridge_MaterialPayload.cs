@@ -76,6 +76,35 @@ namespace VibeBridge {
             return JsonUtility.ToJson(new BasicRes { message = "Texture updated" });
         }
 
+        public static string VibeTool_material_set_float(Dictionary<string, string> q) {
+            GameObject go = Resolve(q["path"]);
+            var r = go?.GetComponent<Renderer>();
+            int idx = int.Parse(q["index"]);
+            if (r == null || idx >= r.sharedMaterials.Length) return JsonUtility.ToJson(new BasicRes { error = "Invalid target" });
+            
+            var m = r.sharedMaterials[idx];
+            Undo.RecordObject(m, "Set Float");
+            m.SetFloat(q["field"], float.Parse(q["value"]));
+            return JsonUtility.ToJson(new BasicRes { message = "Float updated" });
+        }
+
+        public static string VibeTool_material_toggle_keyword(Dictionary<string, string> q) {
+            GameObject go = Resolve(q["path"]);
+            var r = go?.GetComponent<Renderer>();
+            int idx = int.Parse(q["index"]);
+            if (r == null || idx >= r.sharedMaterials.Length) return JsonUtility.ToJson(new BasicRes { error = "Invalid target" });
+            
+            var m = r.sharedMaterials[idx];
+            string kw = q["keyword"];
+            bool state = q["state"].ToLower() == "true";
+            
+            Undo.RecordObject(m, "Toggle Keyword");
+            if (state) m.EnableKeyword(kw);
+            else m.DisableKeyword(kw);
+            
+            return JsonUtility.ToJson(new BasicRes { message = $"Keyword {kw} set to {state}" });
+        }
+
         public static string VibeTool_material_snapshot(Dictionary<string, string> q) {
             GameObject root = Resolve(q["path"]);
             if (root == null) return JsonUtility.ToJson(new BasicRes { error = "Root not found" });

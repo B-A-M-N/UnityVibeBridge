@@ -228,6 +228,11 @@ def list_available_tools() -> str:
     """Returns a list of all installed VibeTools."""
     return str(unity_request("system/list-tools"))
 
+@mcp.tool()
+def execute_recipe(name: str, tools_json: str) -> str:
+    """[Kernel] Executes a batch of tools atomically. Format: '[{"action":"tool/path", "keys":[], "values":[]}, ...]'"""
+    return str(unity_request("system/execute-recipe", {"name": name, "data": f'{{"tools":{tools_json}}}'}, is_mutation=True))
+
 # --- PAYLOAD TOOLS ---
 
 @mcp.tool()
@@ -289,6 +294,16 @@ def set_material_color(path: str, index: int, color: str) -> str:
 def set_material_texture(path: str, index: int, field: str, texture_path: str) -> str:
     """[Payload] Swaps a texture on a material slot."""
     return str(unity_request("material/set-texture", {"path": path, "index": index, "field": field, "texture": texture_path}, is_mutation=True))
+
+@mcp.tool()
+def set_material_float(path: str, index: int, field: str, value: float) -> str:
+    """[Payload] Sets a float property on a material."""
+    return str(unity_request("material/set-float", {"path": path, "index": index, "field": field, "value": value}, is_mutation=True))
+
+@mcp.tool()
+def toggle_material_keyword(path: str, index: int, keyword: str, state: bool) -> str:
+    """[Payload] Enables/Disables a shader keyword (e.g. '_EMISSION')."""
+    return str(unity_request("material/toggle-keyword", {"path": path, "index": index, "keyword": keyword, "state": state}, is_mutation=True))
 
 @mcp.tool()
 def register_object(path: str, role: str, group: str = "default") -> str:
