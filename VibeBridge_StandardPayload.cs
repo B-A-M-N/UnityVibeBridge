@@ -93,28 +93,6 @@ namespace VibeBridge {
             return JsonUtility.ToJson(new BasicRes { message = $"Swapped {count} materials" });
         }
 
-        public static string VibeTool_project_missing_scripts(Dictionary<string, string> q) {
-            var report = new List<BasicRes>();
-            foreach (var go in UnityEngine.Object.FindObjectsOfType<GameObject>(true)) {
-                var components = go.GetComponents<Component>();
-                for (int i = 0; i < components.Length; i++) {
-                    if (components[i] == null) report.Add(new BasicRes { message = go.name, id = go.GetInstanceID() });
-                }
-            }
-            return JsonUtility.ToJson(new MissingScriptsRes { missing = report.Count, details = report.ToArray() });
-        }
-
-        public static string VibeTool_audit_avatar(Dictionary<string, string> q) {
-            GameObject root = Resolve(q["path"]);
-            if (root == null) return JsonUtility.ToJson(new BasicRes { error = "Root not found" });
-            var renderers = root.GetComponentsInChildren<Renderer>(true);
-            var results = renderers.Select(r => {
-                Mesh m = (r is SkinnedMeshRenderer smr) ? smr.sharedMesh : r.GetComponent<MeshFilter>()?.sharedMesh;
-                return new RendererAudit { path = r.name, verts = (m != null ? m.vertexCount : 0), mats = r.sharedMaterials.Length };
-            }).ToArray();
-            return JsonUtility.ToJson(new AvatarAuditRes { name = root.name, renderers = results });
-        }
-
         public static string VibeTool_world_spawn(Dictionary<string, string> q) {
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(q["asset"]);
             if (prefab == null) return JsonUtility.ToJson(new BasicRes { error = "Prefab not found" });
@@ -185,31 +163,6 @@ namespace VibeBridge {
             byte[] bytes = ss.EncodeToPNG();
             UnityEngine.Object.DestroyImmediate(rt);
             return "{\"base64\":\"" + Convert.ToBase64String(bytes) + "\"}";
-        }
-
-        public static string VibeTool_physics_audit(Dictionary<string, string> q) {
-            var rb = UnityEngine.Object.FindObjectsOfType<Rigidbody>();
-            var col = UnityEngine.Object.FindObjectsOfType<Collider>();
-            var results = rb.Select(r => new PhysicsAuditRes.PhysicsNode { name = r.name, type = "Rigidbody", isKinematic = r.isKinematic, isTrigger = false })
-                .Concat(col.Select(c => new PhysicsAuditRes.PhysicsNode { name = c.name, type = "Collider", isKinematic = false, isTrigger = c.isTrigger })).ToArray();
-            return JsonUtility.ToJson(new PhysicsAuditRes { physicsObjects = results });
-        }
-
-        public static string VibeTool_animation_audit(Dictionary<string, string> q) {
-            var animators = UnityEngine.Object.FindObjectsOfType<Animator>();
-            var results = animators.Select(a => {
-                var ctrl = a.runtimeAnimatorController as UnityEditor.Animations.AnimatorController;
-                int missingClips = 0;
-                if (ctrl != null) {
-                    foreach (var layer in ctrl.layers) {
-                        foreach (var state in layer.stateMachine.states) {
-                            if (state.state.motion == null) missingClips++;
-                        }
-                    }
-                }
-                return new AnimationAuditRes.AnimatorNode { name = a.name, missingClips = missingClips };
-            }).ToArray();
-            return JsonUtility.ToJson(new AnimationAuditRes { animators = results });
         }
 
         public static string VibeTool_material_batch_replace(Dictionary<string, string> q) {

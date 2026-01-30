@@ -119,7 +119,9 @@ def bootstrap_vibe_bridge(project_path: str) -> str:
             "VibeBridge_ExtrasPayload.cs",
             "VibeBridge_VisionPayload.cs",
             "VibeBridge_MaterialPayload.cs",
-            "VibeBridge_RegistryPayload.cs"
+            "VibeBridge_RegistryPayload.cs",
+            "VibeBridge_VRChatPayload.cs",
+            "VibeBridge_AuditingPayload.cs"
         ]
         
         for f in payloads:
@@ -254,6 +256,16 @@ def audit_avatar(path: str) -> str:
 def run_physics_audit() -> str:
     """[Payload] Identifies Rigidbodies and Colliders."""
     return str(unity_request("physics/audit"))
+
+@mcp.tool()
+def run_animation_audit() -> str:
+    """[Payload] Detects missing clips and null states in Animators."""
+    return str(unity_request("animation/audit"))
+
+@mcp.tool()
+def rank_physbones(path: str) -> str:
+    """[VRChat] Ranks PhysBones by complexity/importance for Quest pruning."""
+    return str(unity_request("physbone/rank-importance", {"path": path}))
 
 @mcp.tool()
 def spawn_prefab(asset_path: str) -> str:

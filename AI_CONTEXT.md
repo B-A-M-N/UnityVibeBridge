@@ -66,10 +66,11 @@ Agents must follow a strict execution lifecycle to ensure state integrity:
 *   **`swap_to_quest_shaders`**: Automated mobile material transition.
 *   **`opt/fork`**: Non-destructive material and asset isolation.
 
-### 5. 🔬 Intelligence & Auditing
-*   **`audit_avatar`**: Deep Mesh/Material report for a hierarchy.
-*   **`physics_audit`**: Identifies all Rigidbodies and Colliders.
-*   **`animation_audit`**: Detects missing clips and null states in Animators.
+### 5. 🔬 Auditing & Intelligence
+*   **`audit/avatar`**: Deep Mesh/Material report for a hierarchy.
+*   **`physics/audit`**: Identifies all Rigidbodies and Colliders.
+*   **`animation/audit`**: Detects missing clips and null states in Animators.
+*   **`physbone/rank-importance`**: Intelligently ranks PhysBones for Quest optimization.
 *   **`system/find-by-component`**: Locates objects by component type (e.g. VRCPhysBone).
 
 ### 6. 🦊 VRChat SDK Tier
