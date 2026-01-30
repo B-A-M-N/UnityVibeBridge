@@ -11,7 +11,7 @@ namespace VibeBridge {
         public static void ReloadBridge()
         {
             try {
-                global::VibeBridge.VibeBridgeServer.Init();
+                VibeBridgeServer.Reinitialize();
                 Debug.Log("<color=green>[VibeBridge] Bridge Session Re-Initialized Successfully!</color>");
             } catch (Exception e) {
                 Debug.LogError($"[VibeBridge] Failed to re-initialize bridge: {e}");

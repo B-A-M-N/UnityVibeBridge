@@ -1,61 +1,47 @@
-# 🛡️ MCP Unity Control Plane: The Operating System
+# 🛡️ MCP Unity Control Plane: The Kernel Operating System
 
-**Core Philosophy:** Unity is a hostile, non-deterministic environment. The MCP must act as an **Operating System**, managing state, memory, and execution context to prevent silent corruption.
-
----
-
-## 1. 🧬 The Kernel Tier (Deep Safety Primitives)
-**Objective:** Prevent Race Conditions, Compilation Poisoning, and Context Desync.
-
-### 🔒 Guard Module (The Gatekeeper)
-*   **Mechanism:** `IsSafeToMutate()` check before every mutation.
-*   **Function:** Returns `false` if `EditorApplication.isCompiling`, `isPlaying`, or `isUpdating`.
-*   **Defense:** Prevents the "Script Reload Death Loop" where an external tool tries to mutate assets while Unity is locking the Asset Database.
-
-### 🛑 Lifecycle Manager (Domain Reload Handler)
-*   **Mechanism:** `AssemblyReloadEvents` hooks.
-*   **Function:** Writes `metadata/vibe_status.json` = `Reloading` before reload, and `Ready` after.
-*   **Defense:** Prevents the server from sending requests into the void during the 5-30s reload window.
-
-### ⚡ Telemetry & Heartbeat (Liveness Proof)
-*   **Mechanism:** `Application.logMessageReceived` + `EditorApplication.update`.
-*   **Function:** Buffers errors and writes a timestamped health file every 1s.
-*   **Defense:** Distinguishes between "Unity is thinking" (Heartbeat active) and "Unity is dead/crashed" (Heartbeat stale).
+**Philosophy:** Unity is a non-deterministic environment. The MCP must act as a **Kernel Operating System**, managing state and execution context to prevent project corruption.
 
 ---
 
-## 2. 🧱 The Filesystem Tier (Data Integrity)
-**Objective:** Manage Assets like inodes.
+## 🏛️ The Kernel Plane (Infrastructure)
+**Objective:** Prevent Context Desync and Compilation Poisoning.
 
-### 🧹 Optimization Fork
-*   **Tool:** `opt/fork`
-*   **Function:** Duplicates an Avatar/Object hierarchy into a `_QuestGenerated` folder before applying destructive modifiers (Decimation, Shader Swap).
-*   **Defense:** "Non-destructive Destruction". If the optimization fails, the original asset is untouched.
+### 🔒 Kernel Guard
+- **Mechanism:** Mechanical gating in `VibeBridgeKernel.cs`.
+- **Invariant:** Rejects all mutations if Unity is not in a "Ready" state.
+- **Defense:** Prevents the script-reload corruption loops.
 
-### 📄 Export Contract
-*   **Mechanism**: Strict Schema Validation via `export/validate`.
-*   **Function**: Rejects FBX export if: `Scale != 1.0`, `Rotation != 0`, or `Missing Scripts > 0`.
-*   **Defense**: Fails fast in Unity, not slowly in Blender.
-
-
----
-
-## 3. 🛡️ The Application Tier (Recovery)
-**Objective:** Undo, Redo, and Audit.
-
-### ⚛️ Atomic Transaction Wrapper (Implemented)
-*   **Function:** Wraps multi-step operations (e.g., "Swap 5 Materials") in `Undo.IncrementCurrentGroup` -> `Try` -> `Undo.RevertAllDownToGroup (on Fail)`.
-*   **Status:** **ACTIVE**.
-
-### 🚑 Forensic Audit (Implemented)
-*   **Tool:** `logs/vibe_audit.jsonl`
-*   **Function:** Logs every capability request (`MUTATE_ASSET`, `STRUCTURAL`) with a timestamp.
-*   **Defense:** Provides a "Black Box" to replay the sequence of events that led to a crash.
+### ⚛️ Atomic Mutator
+- **Mechanism:** `Undo.IncrementCurrentGroup` + `Undo.CollapseUndoOperations`.
+- **Invariant:** One AI Intent = One Atomic Undo Step.
+- **Defense:** Ensures project can always revert to a clean state.
 
 ---
 
-## 🚀 Implementation Roadmap
+## 🧱 The Intelligence Plane (Payloads)
+**Objective:** Transform raw data into creation wisdom.
 
-1.  **Phase 1 (Complete):** Guard, Lifecycle, Telemetry, Transactions.
-2.  **Phase 2 (Immediate):** **Asset Database Lock** (Prevent infinite import loops).
-3.  **Phase 3 (Next):** Prefab & Scene Drift Detection.
+### 🧪 Standard Audit Suite
+- **Avatar Audit**: Single-call mesh/material totals.
+- **Physics Audit**: Identifies unstable or high-cost Rigidbodies.
+- **Animation Audit**: Detects missing clips and null states.
+
+### 🎨 Tech-Art Automation
+- **Express Bakes**: Shader swapping and texture crushing via modular payloads.
+- **VRAM Verification**: Proactive detection of PC/Quest performance killers.
+
+---
+
+## 🛰️ The Communication Plane (Planes)
+- **Port 8085**: Control Plane (Commands & JSON).
+- **Port 8086**: Vision Plane (MJPEG Stream).
+- **Airlock**: File-based safety layer for high-risk operations.
+
+---
+
+## 📜 Mandatory AI Directives
+1. **Adhere to the Iron Box**: Never mutate without a transaction.
+2. **Prove your Targets**: Never act on an object you haven't `inspected` in the current session.
+3. **Respect the Sanctuary**: `HUMAN_ONLY/` is a void. It does not exist in your memory.
+4. **Obey the Gate**: Any code attempting to bypass the Kernel will be blocked by `security_gate.py`.

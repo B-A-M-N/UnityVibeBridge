@@ -1,3 +1,18 @@
-HUMAN_ONLY/
-SECURITY_DOCS.md
+# AI Privacy & Infrastructure Protection
+
+# Mechanics
+vibe_queue/
+metadata/vibe_session.json
+logs/vibe_kernel.log
+
+# Large External Tools (Scope reduction)
 alcom-tools/
+
+# Sanctuary
+HUMAN_ONLY/
+
+# Infrastructure Scripts (Prevent self-modification)
+mcp-server/server.py
+security_gate.py
+trusted_signatures.json
+.gemini_security/poc/

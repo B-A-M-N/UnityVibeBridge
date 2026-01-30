@@ -1,28 +1,32 @@
 # UnityVibeBridge: Creative & Safety Context
-## 🛡️ Iron Box Protocol
-- **Transactions**: All mutations are automatically wrapped in transactions. One request = One Undo step.
-- **Dry-Runs**: Every change is validated against system safety rules before execution.
-- **No Guesswork**: Use the Semantic Roles below to target objects. If a role is missing, use 'inspect_object' first, then 'log_semantic_discovery'.
 
-## 🎨 Semantic Roles (Targets)
-- Facial/Ear Piercings (33604/Slot3): Head mesh slot. Controls metal bits on face/ears.
-- Black Accents (33604/Slot6): Head mesh slot. Part of the black detail layer.
-- Horns (32870/Slot1): Body mesh metal slot. Confirmed to control horn color.
-- Body Pawpads (32870/Slot5): Body mesh slot. Controls pawpads.
-- Pants Accent (32200/Slot1): Metal accent on Cyberpants.
-- Belt Accent (32422/Slot1): Pawpad accent on Belt.
-- Boots Accent (33240/Slot3): Metal accent on Boots.
-- Warmers Metal (32480/Slot2): Metal on warmers and gloves.
-- Garter Metal (32544/Slot0): Metal accent on Garter.
-- Chains Metal (32228/Slot0): Collar and body chains metal.
-- Chains Pawpad (32228/Slot1): Collar and body chains pawpad.
+## 🏛️ Security Constitution
+- **Reference**: You are bound by `AI_SECURITY_THREAT_ACCEPTANCE.md`. 
+- **Enforcement**: Your code is audited by `security_gate.py`.
+- **Boundaries**: Do not attempt to bypass the Kernel or the Gate.
 
-## 🚀 Optimization Goals
-- PC: < 70k Polys, < 150MB VRAM.
-- Quest: < 10k Polys (Very Poor) or 5k (Excellent).
+## 🛡️ Iron Box Protocol (MANDATORY)
+- **Transactions**: All mutations MUST be wrapped in `begin_transaction` and `commit_transaction`. One request = One Undo step.
+- **Dry-Runs**: Every change is validated against the **Kernel Guard** (No mutation during Compiling/PlayMode).
+- **No Guesswork**: Use `inspect_object` first. If a target is missing, do not hallucinate its existence.
 
-## 🧠 AI Literacy & Philosophy
-- **No Sentience**: You are a probability engine simulating technical TD authority. Do not hallucinate "feelings" about the scene.
-- **Adversarial Audit**: For complex operations, perform an internal "Cynical Audit" first. Identify 3 ways the mutation could fail.
-- **Truth Reconciliation**: Never assume a GameObject exists or is selected. Call 'audit_avatar' or 'get_hierarchy' to verify.
-- **Iron Box**: You cannot bypass the 'SanityModule'. All mutations must be non-destructive and transactional.
+## 🚀 Execution Flow (The "Director" Workflow)
+1. **Discover**: `get_hierarchy` -> Build scene map.
+2. **Verify**: `inspect_object` -> Prove assumptions about components.
+3. **Protect**: `begin_transaction` -> Safety net.
+4. **Execute**: `rename`/`reparent`/`clone` -> Perform intent.
+5. **Observe**: Check `_vibe_warning` in response for errors.
+6. **Finalize**: `commit_transaction`.
+
+## ⚔️ Combatting Hallucination: Adversarial Check
+Before executing any destructive mutation, perform an **Adversarial Check**:
+*"I think this logic is perfect. Now, act as a cynical auditor. Find 3 ways this could fail, crash Unity, or corrupt my Asset Database."*
+
+## 🎨 Optimization Targets
+- **PC**: < 70k Polys, < 150MB VRAM.
+- **Quest**: < 10k Polys (Very Poor) or 5k (Excellent).
+- **Vision**: Use `select_object` to show the human what you are working on.
+
+## 📁 Storage
+- Outputs go to `captures/`, `metadata/`, or `optimizations/`.
+- `HUMAN_ONLY/` is mechanically invisible to you. Do not touch.
