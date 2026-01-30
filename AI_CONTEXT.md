@@ -33,10 +33,6 @@ Agents must follow a strict execution lifecycle to ensure state integrity:
 
 ---
 
-## 📘 Further Reading
-- For instructions on how to manage AI behavior and prevent hallucinations, see [AI_PHILOSOPHY.md](AI_PHILOSOPHY.md).
-- For strict engineering rules, see [AI_ENGINEERING_CONSTRAINTS.md](AI_ENGINEERING_CONSTRAINTS.md).
-
 ## 🛠️ Unified Tool Inventory
 
 ### 1. 🧠 Epistemic & Cognitive Governance
@@ -63,14 +59,29 @@ Agents must follow a strict execution lifecycle to ensure state integrity:
 *   **`material/inspect-properties`**: Returns all shader properties for a slot.
 *   **`material/set-color` / `set-texture`**: High-fidelity slot mutations.
 *   **`material/set-float` / `toggle-keyword`**: Granular shader control.
+*   **`material/batch-replace`**: Replaces materials across multiple targets.
+*   **`material/snapshot` / `restore`**: Persistent material state management.
+*   **`vram_footprint`**: Numerical GPU memory audit of textures.
+*   **`texture_crush`**: Batch max-size reduction for optimization.
+*   **`swap_to_quest_shaders`**: Automated mobile material transition.
+*   **`opt/fork`**: Non-destructive material and asset isolation.
 
-### 5. 🔗 Pipeline & Infrastructure
+### 5. 🔬 Intelligence & Auditing
+*   **`audit_avatar`**: Deep Mesh/Material report for a hierarchy.
+*   **`physics_audit`**: Identifies all Rigidbodies and Colliders.
+*   **`animation_audit`**: Detects missing clips and null states in Animators.
+*   **`system/find-by-component`**: Locates objects by component type (e.g. VRCPhysBone).
+
+### 6. 🔗 Pipeline & Infrastructure
 *   **`registry/add`**: Persists a semantic role (e.g. "MainBody") for an object.
 *   **`registry/list`**: Returns all registered semantic targets.
-*   **`world/spawn`**: Prefab instantiation.
+*   **`world/spawn`**: Prefab instantiation with position/rotation support.
 *   **`asset/rename` / `move`**: Project database management.
-*   **`export/validate`**: Blender-readiness checks.
-*   **`view/screenshot`**: High-speed visual verification.
+*   **`prefab/apply`**: Commits instance overrides to the master asset.
+*   **`export/validate`**: Blender-readiness and scale sanity checks.
+*   **`view/screenshot`**: High-speed visual verification via Port 8085.
+
+---
 
 ### 🧹 Organizational Purity
 All agent outputs are neatly sorted to prevent root directory clutter:
@@ -92,3 +103,12 @@ For maximum safety, run the agent in an isolated Docker sandbox. This prevents t
 Every code modification and shell command is audited by `security_gate.py` using AST logic analysis.
 *   **Automatic Blocking**: Malicious imports and external network calls are blocked silently.
 *   **Human Trust**: High-risk operations must be manually authorized.
+
+---
+
+## 📘 Further Reading
+- For instructions on how to manage AI behavior and prevent hallucinations, see [AI_PHILOSOPHY.md](AI_PHILOSOPHY.md).
+- For strict engineering rules, see [AI_ENGINEERING_CONSTRAINTS.md](AI_ENGINEERING_CONSTRAINTS.md).
+
+---
+**Copyright (C) 2026 B-A-M-N**
