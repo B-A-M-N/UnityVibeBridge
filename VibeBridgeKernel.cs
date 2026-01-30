@@ -24,6 +24,7 @@ using UnityEngine;
 namespace VibeBridge {
     [Serializable] public class SessionData { public string sessionNonce; public List<int> createdObjectIds = new List<int>(); }
     [Serializable] public class AirlockCommand { public string action, id, capability; public string[] keys, values; }
+    [Serializable] public class RecipeCommand { public AirlockCommand[] tools; }
     [Serializable] public class KernelSettings {
         public PortSettings ports = new PortSettings();
         [Serializable] public class PortSettings { public int control = 8085, vision = 8086; }
@@ -172,6 +173,28 @@ namespace VibeBridge {
         public static string VibeTool_system_list_tools(Dictionary<string, string> q) {
             var tools = typeof(VibeBridgeServer).GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Where(m => m.Name.StartsWith("VibeTool_")).Select(m => m.Name.Substring(9).Replace("_", "/")).ToArray();
             return JsonUtility.ToJson(new ToolListRes { tools = tools });
+        }
+
+        public static string VibeTool_system_execute_recipe(Dictionary<string, string> q) {
+            // Recipies arrive as a JSON encoded string in the 'data' key for Airlock compatibility
+            if (!q.ContainsKey("data")) return JsonUtility.ToJson(new BasicRes { error = "No recipe data" });
+            
+            var recipe = JsonUtility.FromJson<RecipeCommand>(q["data"]);
+            if (recipe == null || recipe.tools == null) return JsonUtility.ToJson(new BasicRes { error = "Malformed recipe" });
+
+            Undo.IncrementCurrentGroup();
+            Undo.SetCurrentGroupName("Recipe: " + (q.ContainsKey("name") ? q["name"] : "Unnamed"));
+            int group = Undo.GetCurrentGroup();
+
+            var results = new List<string>();
+            try {
+                foreach (var cmd in recipe.tools) results.Add(ExecuteAirlockCommand(cmd));
+                Undo.CollapseUndoOperations(group);
+                return "{\"message\":\"Recipe executed\",\"results\":[" + string.Join(",", results) + "]}";
+            } catch (Exception e) {
+                Undo.RevertAllDownToGroup(group);
+                return JsonUtility.ToJson(new BasicRes { error = "Recipe aborted: " + e.Message });
+            }
         }
 
         public static string VibeTool_inspect(Dictionary<string, string> q) {
