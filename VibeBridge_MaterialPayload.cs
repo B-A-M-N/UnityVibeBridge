@@ -16,6 +16,8 @@ namespace VibeBridge {
         
         [Serializable] public class MatListRes { public MatNode[] materials; [Serializable] public struct MatNode { public int index; public string name; } }
         [Serializable] public class MatPropRes { public string name, shader; public string[] properties; }
+        [Serializable] public class MatSnapshot { public string avatarName; public List<RendererSnapshot> renderers = new List<RendererSnapshot>(); }
+        [Serializable] public class RendererSnapshot { public string path; public List<string> materialGuids = new List<string>(); }
 
         public static string VibeTool_material_list(Dictionary<string, string> q) {
             GameObject go = Resolve(q["path"]);
@@ -72,6 +74,61 @@ namespace VibeBridge {
             m.SetTexture(field, tex);
             
             return JsonUtility.ToJson(new BasicRes { message = "Texture updated" });
+        }
+
+        public static string VibeTool_material_snapshot(Dictionary<string, string> q) {
+            GameObject root = Resolve(q["path"]);
+            if (root == null) return JsonUtility.ToJson(new BasicRes { error = "Root not found" });
+
+            var snapshot = new MatSnapshot { avatarName = root.name };
+            foreach (var r in root.GetComponentsInChildren<Renderer>(true)) {
+                var rs = new RendererSnapshot { path = GetGameObjectPath(r.gameObject, root) };
+                foreach (var m in r.sharedMaterials) {
+                    rs.materialGuids.Add(m != null ? AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(m)) : "null");
+                }
+                snapshot.renderers.Add(rs);
+            }
+
+            string path = $"metadata/snapshots/{root.name}_mats.json";
+            if (!Directory.Exists("metadata/snapshots")) Directory.CreateDirectory("metadata/snapshots");
+            File.WriteAllText(path, JsonUtility.ToJson(snapshot, true));
+            return JsonUtility.ToJson(new BasicRes { message = $"Snapshot saved to {path}" });
+        }
+
+        public static string VibeTool_material_restore(Dictionary<string, string> q) {
+            GameObject root = Resolve(q["path"]);
+            if (root == null) return JsonUtility.ToJson(new BasicRes { error = "Root not found" });
+
+            string path = $"metadata/snapshots/{root.name}_mats.json";
+            if (!File.Exists(path)) return JsonUtility.ToJson(new BasicRes { error = "Snapshot not found" });
+
+            var snapshot = JsonUtility.FromJson<MatSnapshot>(File.ReadAllText(path));
+            int count = 0;
+            foreach (var rs in snapshot.renderers) {
+                GameObject target = (rs.path == ".") ? root : root.transform.Find(rs.path)?.gameObject;
+                var renderer = target?.GetComponent<Renderer>();
+                if (renderer != null) {
+                    Undo.RecordObject(renderer, "Restore Materials");
+                    var mats = new Material[rs.materialGuids.Count];
+                    for (int i = 0; i < rs.materialGuids.Count; i++) {
+                        if (rs.materialGuids[i] == "null") mats[i] = null;
+                        else mats[i] = AssetDatabase.LoadAssetAtPath<Material>(AssetDatabase.GUIDToAssetPath(rs.materialGuids[i]));
+                    }
+                    renderer.sharedMaterials = mats;
+                    count++;
+                }
+            }
+            return JsonUtility.ToJson(new BasicRes { message = $"Restored {count} renderers" });
+        }
+
+        private static string GetGameObjectPath(GameObject obj, GameObject root) {
+            if (obj == root) return ".";
+            string path = obj.name;
+            while (obj.transform.parent != null && obj.transform.parent.gameObject != root) {
+                obj = obj.transform.parent.gameObject;
+                path = obj.name + "/" + path;
+            }
+            return path;
         }
     }
 }

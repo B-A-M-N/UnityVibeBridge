@@ -47,7 +47,7 @@ namespace VibeBridge {
             _registry.entries.RemoveAll(e => e.uuid == entry.uuid || e.role == entry.role);
             _registry.entries.Add(entry);
             SaveRegistry();
-            return JsonUtility.ToJson(new BasicRes { message = "Registered", message = entry.uuid });
+            return JsonUtility.ToJson(new BasicRes { message = "Registered", id = go.GetInstanceID() });
         }
 
         public static string VibeTool_registry_list(Dictionary<string, string> q) {
@@ -55,7 +55,7 @@ namespace VibeBridge {
             return JsonUtility.ToJson(_registry);
         }
 
-        private static void LoadRegistry() {
+        public static void LoadRegistry() {
             if (File.Exists(REGISTRY_PATH)) try { _registry = JsonUtility.FromJson<RegistryData>(File.ReadAllText(REGISTRY_PATH)); } catch { _registry = new RegistryData(); }
         }
         private static void SaveRegistry() {

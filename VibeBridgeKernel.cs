@@ -285,10 +285,37 @@ namespace VibeBridge {
             try { File.WriteAllText("metadata/vibe_health.json", "{\"editorState\":\"Ready\",\"errorCount\":" + _errors.Count + "}"); } catch {} 
         }
         private static GameObject Resolve(string p) { 
+            if (string.IsNullOrEmpty(p)) return null;
             if (int.TryParse(p, out int id)) return EditorUtility.InstanceIDToObject(id) as GameObject; 
+            
+            // --- SEMANTIC RESOLUTION ---
+            if (p.StartsWith("sem:")) {
+                string role = p.Substring(4);
+                LoadRegistry(); // Dependency on RegistryPayload logic
+                var entry = _registry.entries.FirstOrDefault(e => e.role == role);
+                if (entry != null) {
+                    var go = EditorUtility.InstanceIDToObject(entry.lastKnownID) as GameObject;
+                    if (go != null) return go;
+                    // Fallback: search by mesh fingerprint if ID is lost
+                    return ResolveByFingerprint(entry.fingerprint);
+                }
+            }
+
             var asset = AssetDatabase.LoadAssetAtPath<GameObject>(p);
             if (asset != null) return asset;
             return GameObject.Find(p); 
+        }
+
+        private static GameObject ResolveByFingerprint(Fingerprint fp) {
+            if (fp == null) return null;
+            var all = UnityEngine.Object.FindObjectsOfType<GameObject>();
+            foreach (var go in all) {
+                var smr = go.GetComponent<SkinnedMeshRenderer>();
+                var mf = go.GetComponent<MeshFilter>();
+                Mesh m = smr != null ? smr.sharedMesh : mf?.sharedMesh;
+                if (m != null && m.name == fp.meshName && m.vertexCount == fp.vertices) return go;
+            }
+            return null;
         }
 
         private static HttpListener _listener;
