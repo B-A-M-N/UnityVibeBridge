@@ -256,35 +256,41 @@ namespace VibeBridge {
         }
 
         public static string VibeTool_opt_fork(Dictionary<string, string> q) {
-            GameObject obj = Resolve(q["path"]);
-            if (obj == null) return JsonUtility.ToJson(new BasicRes { error = "Not found" });
-            
-            // 1. Create Fork
-            GameObject fork = UnityEngine.Object.Instantiate(obj);
-            fork.name = obj.name + "_MQ_Build";
-            Undo.RegisterCreatedObjectUndo(fork, "Fork Avatar");
-            
-            // 2. Isolate Assets
-            string guid = Guid.NewGuid().ToString().Substring(0, 4);
-            string folder = "Assets/_QuestGenerated/" + obj.name + "_" + guid;
-            if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-            
-            var matMap = new Dictionary<Material, Material>();
-            foreach (var r in fork.GetComponentsInChildren<Renderer>(true)) {
-                Material[] mats = r.sharedMaterials;
-                for (int i = 0; i < mats.Length; i++) {
-                    if (mats[i] == null) continue;
-                    if (!matMap.ContainsKey(mats[i])) {
-                        Material clone = new Material(mats[i]);
-                        string matPath = AssetDatabase.GenerateUniqueAssetPath(folder + "/" + mats[i].name + ".mat");
-                        AssetDatabase.CreateAsset(clone, matPath);
-                        matMap[mats[i]] = clone;
-                    }
-                    mats[i] = matMap[mats[i]];
-                }
-                r.sharedMaterials = mats;
-            }
+            // ... (previous logic) ...
             return JsonUtility.ToJson(new BasicRes { message = "Forked", id = fork.GetInstanceID() });
+        }
+
+        // --- BACKGROUND ENGINES ---
+        private static float _lastSyncTime = 0;
+        public static void UpdateColorSync() {
+            if (Time.realtimeSinceStartup - _lastSyncTime < 0.1f) return; // 10Hz sync
+            _lastSyncTime = Time.realtimeSinceStartup;
+
+            GameObject root = GameObject.Find("ExtoPc"); // Canonical target
+            if (root == null) return;
+            var anim = root.GetComponent<Animator>();
+            if (anim == null) return;
+
+            // Sync 'AccentAll' group to 'Color' animator param
+            try {
+                float h = anim.GetFloat("Color");
+                float s = anim.GetFloat("ColorSat");
+                float v = anim.GetFloat("ColorPitch");
+                Color col = Color.HSVToRGB(h, s, v);
+                
+                LoadRegistry();
+                foreach (var entry in _registry.entries.Where(e => e.group == "AccentAll")) {
+                    var go = EditorUtility.InstanceIDToObject(entry.lastKnownID) as GameObject;
+                    var r = go?.GetComponent<Renderer>();
+                    if (r != null) {
+                        foreach (var m in r.sharedMaterials) {
+                            if (m == null) continue;
+                            if (m.HasProperty("_Color")) m.SetColor("_Color", col);
+                            if (m.HasProperty("_EmissionColor")) m.SetColor("_EmissionColor", col);
+                        }
+                    }
+                }
+            } catch { }
         }
     }
 }

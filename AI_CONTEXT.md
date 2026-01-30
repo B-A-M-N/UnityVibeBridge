@@ -72,7 +72,12 @@ Agents must follow a strict execution lifecycle to ensure state integrity:
 *   **`animation_audit`**: Detects missing clips and null states in Animators.
 *   **`system/find-by-component`**: Locates objects by component type (e.g. VRCPhysBone).
 
-### 6. 🔗 Pipeline & Infrastructure
+### 6. 🦊 VRChat SDK Tier
+*   **`vrc/menu/add`**: Adds controls to Expression Menu assets.
+*   **`vrc/params/add`**: Adds synchronized parameters to SDK assets.
+*   **ColorSync (Auto)**: Background engine that propagates 'AccentAll' material groups to Animator values.
+
+### 7. 🔗 Pipeline & Infrastructure
 *   **`registry/add`**: Persists a semantic role (e.g. "MainBody") for an object.
 *   **`registry/list`**: Returns all registered semantic targets.
 *   **`world/spawn`**: Prefab instantiation with position/rotation support.

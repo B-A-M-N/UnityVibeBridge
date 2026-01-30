@@ -99,6 +99,7 @@ namespace VibeBridge {
             UpdateHeartbeat();
             if (_currentState != BridgeState.Running || _isProcessing) return;
             HandleHttpRequests();
+            UpdateColorSync(); // Restored background engine
             
             string[] pending = Directory.GetFiles(_inboxPath, "*.json");
             if (pending.Length == 0) return;

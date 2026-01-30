@@ -316,6 +316,16 @@ def list_registry() -> str:
     return str(unity_request("registry/list"))
 
 @mcp.tool()
+def add_vrc_menu_control(path: str, name: str, control_type: int, parameter: str) -> str:
+    """[VRChat] Adds a control to an Expression Menu asset. Types: 0=Button, 1=Toggle, 2=SubMenu, 3=TwoAxis."""
+    return str(unity_request("vrc/menu/add", {"path": path, "name": name, "type": control_type, "parameter": parameter}, is_mutation=True))
+
+@mcp.tool()
+def add_vrc_parameter(path: str, name: str, value_type: int) -> str:
+    """[VRChat] Adds a parameter to a VRCExpressionParameters asset. Types: 0=Float, 1=Int, 2=Bool."""
+    return str(unity_request("vrc/params/add", {"path": path, "name": name, "type": value_type}, is_mutation=True))
+
+@mcp.tool()
 def take_screenshot() -> ImageContent:
     """Captures the scene view via Port 8085."""
     try:
