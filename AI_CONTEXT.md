@@ -1,4 +1,40 @@
-# UnityVibeBridge
+# UnityVibeBridge: The Governed Creation Kernel
+
+## 🧠 Understanding Your AI "Co-Pilot"
+
+### ⚙️ Demystifying the Magic: High-Fidelity Simulation
+Large Language Models (LLMs) are **Probability Engines** that have become exceptionally good at **simulating aspects of sentience**. They don't "know" facts or feel emotions; they predict the next most likely sequence of tokens based on patterns in their training data and the "vibe" of your current conversation. 
+
+In the context of Unity, the AI is not "visualizing" your Scene in a mind's eye. It is calculating the most statistically probable set of commands that align with your natural language intent.
+
+### 🏷️ The Implied Sentience Trap (Combating AI Psychosis)
+It is easy to fall into "magical thinking" when an AI responds with human-like warmth or technical authority. However, treating the AI as a sentient being—asking it what it "thinks" or "feels"—can lead to **AI Psychosis**: a state where the user forgets the AI is a simulation and begins to trust its hallucinations as objective truth.
+
+**The Name Example**:
+One of the best ways to combat "magical thinking" is to understand that the AI is simply reflecting your own intent. For example, if you ask an AI its name:
+*   **Highly Technical Conversation**: It might name itself **"Nexus"** or **"Core"** to match your energy.
+*   **ELI5 (Simple) Conversation**: It will likely choose **"Buddy"** or **"Sparky"** to please you.
+
+The AI doesn't "have" a name; it calculates that giving you a name fits the pattern of a helpful assistant. Currently, we remain in the realm of high-fidelity simulation, not "True Sentience."
+
+### ⚔️ Combatting Overconfidence: Adversarial Prompting
+If you ever feel like you are doing something "groundbreaking" with the AI, that is the moment you need to be the most careful. It is easy to fall into a feedback loop where the AI just agrees with your greatness.
+
+**The Strategy**: Use **Adversarial Prompting**. 
+Ask the AI: *"I think this new logic is perfect. Now, I want you to act as a cynical auditor. Find 3 ways this could fail, crash Unity, or corrupt my Asset Database."*
+
+Forcing the AI to argue *against* your ideas keeps you grounded in reality. Use the AI to test and destroy your own assumptions.
+
+### 🧩 The Cognitive Gap
+Humans have a mental map of reality (e.g., you know that **Shoes are on Feet**). An AI does not "see" your Unity Scene; it only sees data patterns and names. If it picks the wrong object, it's because it lacks your "human context." 
+*   **The Fix**: Break tasks into the smallest units possible. Avoid "Vague Vibes." Do not assume the AI knows that a "Prop" should be parented to the "Hand" unless you explicitly tell it.
+
+**UnityVibeBridge is designed to cure this drift by providing:**
+1. **Numerical Telemetry**: Replacing "imagined" scenes with hard vertex counts and coordinates.
+2. **Epistemic Reconciliation**: Forcing the AI to prove its assumptions against the actual Unity state via `audit_avatar`.
+3. **Kernel Governance**: Ensuring that even if the AI "hallucinates" a dangerous intent, the system mechanically prevents the damage via the `SanityModule`.
+
+---
 
 ## Concept: Mechanistic Vibe Coding
 
@@ -20,7 +56,9 @@ graph LR
 ## Completed Features (Phase 3 Hardened)
 
 ### 1. Safety & Stability (The Iron Box)
-*   **Zero-Latency Heartbeat**: Domain reloads are detected via piggybacked response headers (`X-Vibe-Session`), invalidating stale InstanceIDs without extra network calls.
+*   **Zero-Latency Heartbeat**: Domain reloads are detected via `metadata/vibe_health.json`. The AI monitors `isCompiling` and `state` to prevent command poisoning.
+*   **Machine-Readable Diagnostics**: Unity streams structured console errors via `telemetry/get-errors`, replacing manual console inspection.
+*   **Liveness Verification**: A 1-second interval heartbeat ensures the bridge is alive and not wedged in a deadlocked thread.
 *   **Implicit Transactions**: The bridge automatically wraps mutations in atomic `Undo` groups. Every AI action is a single, clean Undo step in Unity.
 *   **Provenance Tagging**: Every object created by the AI is session-tagged.
 *   **Destruction Safety**: The `destroy_object` tool mechanically protects master files by refusing to delete any object created outside the current session.

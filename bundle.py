@@ -82,7 +82,9 @@ def extract_all_namespaces(content):
     # Actually, let's keep the content intact to preserve positions, just scan carefully.
     
     # Find namespace declarations
-    ns_matches = list(re.finditer(r"namespace\s+([\w\.]+)\s*\{", content))
+    ns_matches = list(re.finditer(r"namespace\s+([\w\.]+)\s*\{", content, re.MULTILINE | re.DOTALL))
+    if not ns_matches:
+        print(f"  !! No namespace matches found in {len(content)} bytes of content")
     
     for match in ns_matches:
         ns_name = match.group(1)

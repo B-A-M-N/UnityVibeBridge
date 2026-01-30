@@ -66,4 +66,10 @@ namespace VibeBridge {
             }
 
             AssetDatabase.SaveAssets();
-            return "{\"message\":\"Fork complete\",\"instanceID\":
+            return "{\"message\":\"Fork complete\",\"instanceID\":" + fork.GetInstanceID() + "}";
+        }
+
+        [Serializable] public class MaterialSnapshot { public string avatarName; public List<RendererSnapshot> renderers = new List<RendererSnapshot>(); }
+        [Serializable] public class RendererSnapshot { public string path; public List<string> materialGuids = new List<string>(); }
+    }
+}

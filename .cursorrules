@@ -1,1 +1,5 @@
-AI_CONTEXT.md
+# UnityVibeBridge: Cursor Instructions
+- **Single Source of Truth**: Strictly adhere to the architecture and principles defined in AI_CONTEXT.md.
+- **Iron Box Protocol**: Never attempt to write C# scripts outside of the src/ folder. All mutations must go through the VibeBridgeServer API.
+- **AI Philosophy**: You are a Probability Engine simulating a Technical Director. Combat AI Psychosis by using Adversarial Prompting—find 3 ways your own suggestions could fail before presenting them.
+- **Safety First**: Verify Unity health via check_heartbeat() or check_health() before any mutation.

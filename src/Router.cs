@@ -8,6 +8,19 @@ namespace VibeBridge {
     public static partial class VibeBridgeServer {
         public static string ExecuteAirlockCommand(AirlockCommand cmd) {
             try {
+                // SAFETY CHECK: Enforce Guard for non-read operations
+                if (!string.IsNullOrEmpty(cmd.capability) && 
+                    !cmd.capability.Equals("read", StringComparison.OrdinalIgnoreCase) && 
+                    !cmd.capability.Equals("none", StringComparison.OrdinalIgnoreCase)) {
+                    
+                    if (!IsSafeToMutate()) {
+                        return "{\"error\":\"UNSAFE_STATE: Editor is compiling, playing, or updating. Operation rejected.\"}";
+                    }
+
+                    // SANITY CHECK: Enforce hardware safety railings
+                    ValidateSanity(cmd);
+                }
+
                 string path = cmd.action.TrimStart('/');
                 // Default mapping: replace / and - with _
                 string methodName = "VibeTool_" + path.Replace("/", "_").Replace("-", "_");
@@ -29,8 +42,18 @@ namespace VibeBridge {
                 if (path == "opt/shader/quest") methodName = "VibeTool_shader_swap_quest";
                 if (path == "opt/texture/crush") methodName = "VibeTool_texture_crush";
                 if (path == "opt/mesh/simplify") methodName = "VibeTool_opt_mesh_simplify";
+                if (path == "audit/avatar") methodName = "VibeTool_audit_avatar";
+                if (path == "visual/point") methodName = "VibeTool_visual_point";
+                if (path == "visual/line") methodName = "VibeTool_visual_line";
+                if (path == "visual/clear") methodName = "VibeTool_visual_clear";
                 if (path == "vrc/param/get") methodName = "VibeTool_vrc_param_get";
                 if (path == "vrc/param/set") methodName = "VibeTool_vrc_param_set";
+                if (path == "object/export-fbx") methodName = "VibeTool_object_export_fbx";
+                if (path == "export/validate") methodName = "VibeTool_export_validate";
+                if (path == "view/screenshot") methodName = "VibeTool_view_screenshot";
+                if (path == "world/static") methodName = "VibeTool_world_static";
+                if (path == "world/navmesh/bake") methodName = "VibeTool_world_navmesh_bake";
+                if (path == "world/spawn") methodName = "VibeTool_world_spawn";
 
                 var method = typeof(VibeBridgeServer).GetMethod(methodName, 
                     BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.IgnoreCase);
@@ -43,6 +66,13 @@ namespace VibeBridge {
                         query[cmd.keys[i]] = cmd.values[i];
                     }
                 }
+                
+                // FORENSIC LOG: If this is a mutation, log it
+                if (!string.IsNullOrEmpty(cmd.capability) && 
+                    !cmd.capability.Equals("read", StringComparison.OrdinalIgnoreCase)) {
+                    LogMutation(cmd.capability, cmd.id, cmd.action, JsonUtility.ToJson(cmd));
+                }
+
                 return (string)method.Invoke(null, new object[] { query });
             } catch (Exception e) {
                 return "{\"error\":\"" + e.Message.Replace("\"", "\\\"") + "\"}";

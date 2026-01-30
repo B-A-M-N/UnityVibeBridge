@@ -99,6 +99,28 @@ def check_unity_status() -> str:
     return str(unity_request("GET", "/status"))
 
 @mcp.tool()
+def check_health() -> str:
+    """Retrieves deep health state from Unity (Ready, Compiling, Playing)."""
+    return str(unity_request("GET", "/health/check"))
+
+@mcp.tool()
+def check_heartbeat() -> str:
+    """Reads the local heartbeat file. Use this if Unity is unresponsive via HTTP."""
+    path = os.path.join(UNITY_PROJECT_PATH, "metadata", "vibe_health.json")
+    if os.path.exists(path):
+        try:
+            with open(path, "r") as f:
+                return f.read()
+        except Exception as e:
+            return f"Error reading heartbeat: {str(e)}"
+    return "Heartbeat file missing. Unity may be crashed or not yet initialized."
+
+@mcp.tool()
+def get_telemetry_errors() -> str:
+    """Retrieves the last 50 console errors/exceptions from Unity."""
+    return str(unity_request("GET", "/telemetry/get-errors"))
+
+@mcp.tool()
 def set_server_mode(mode: str) -> str:
     """Toggles the server between 'readonly' and 'readwrite' modes."""
     return str(unity_request("GET", "/system/mode", {"mode": mode.lower()}))
@@ -263,6 +285,43 @@ def get_target_data(role: str) -> str:
 # --- TOOL GROUP: INSPECTION & AUDIT ---
 
 @mcp.tool()
+def audit_avatar(target: str) -> str:
+    """
+    Cognitive Upgrade: Performs a deep, single-call audit of an avatar hierarchy.
+    Returns renderers, mesh stats, materials, and missing script issues.
+    """
+    return str(unity_request("GET", "/audit/avatar", {"path": target}))
+
+@mcp.tool()
+def visual_point(target: str = None, pos: str = None, label: str = "Attention") -> str:
+    """
+    Visual Upgrade: Spawns a red sphere in the Unity Editor to point at a specific target or position.
+    Use this to 'show' the human where an error is.
+    """
+    params = {"label": label}
+    if target: params["path"] = target
+    if pos: params["pos"] = pos
+    return str(unity_request("GET", "/visual/point", params, is_mutation=True))
+
+@mcp.tool()
+def visual_line(start_target: str = None, start_pos: str = None, end_target: str = None, end_pos: str = None, label: str = "Connection") -> str:
+    """
+    Visual Upgrade: Spawns a yellow line in the Unity Editor to connect two targets or positions.
+    Use this to 'show' relationships between objects to the human.
+    """
+    params = {"label": label}
+    if start_target: params["startPath"] = start_target
+    if start_pos: params["startPos"] = start_pos
+    if end_target: params["endPath"] = end_target
+    if end_pos: params["endPos"] = end_pos
+    return str(unity_request("GET", "/visual/line", params, is_mutation=True))
+
+@mcp.tool()
+def visual_clear() -> str:
+    """Removes all AI-spawned visual pointers from the scene."""
+    return str(unity_request("GET", "/visual/clear", {}, is_mutation=True))
+
+@mcp.tool()
 def get_hierarchy(root: str = None) -> str:
     """Retreives the Unity scene hierarchy."""
     return str(unity_request("GET", "/hierarchy", {"root": root} if root else {}))
@@ -344,9 +403,22 @@ def create_optimization_variant(target: str, suffix: str = "Quest") -> str:
     return str(unity_request("GET", "/object/create-variant", {"path": target, "suffix": suffix}, is_mutation=True))
 
 @mcp.tool()
-def export_fbx(target: str, export_path: str) -> str:
-    """Exports a GameObject from Unity to an FBX file using the FBX Exporter package."""
-    return str(unity_request("GET", "/object/export-fbx", {"path": target, "exportPath": export_path}, is_mutation=True))
+def validate_export(target: str) -> str:
+    """
+    Performs a pre-export check for Blender compatibility.
+    Checks for scale sanity, non-zero rotations, and missing scripts.
+    """
+    return str(unity_request("GET", "/export/validate", {"path": target}))
+
+@mcp.tool()
+def export_fbx(target: str, export_path: str = None) -> str:
+    """
+    Exports a GameObject from Unity to an FBX file with Blender-safety checks.
+    Automatically ensures the root scale is 1.0.
+    """
+    params = {"path": target}
+    if export_path: params["exportPath"] = export_path
+    return str(unity_request("GET", "/object/export-fbx", params, is_mutation=True))
 
 @mcp.tool()
 def crush_textures(target: str, max_size: int = 512) -> str:
@@ -373,9 +445,13 @@ def take_screenshot(view: str = "scene", filename: str = None) -> ImageContent:
         b64 = resp.json().get('base64')
         if b64:
             ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            fname = filename or f"screenshot_{{ts}}.png"
+            fname = filename or f"screenshot_{ts}.png"
+            data = base64.b64decode(b64)
             with open(os.path.join("captures", fname), "wb") as f:
-                f.write(base64.b64decode(b64))
+                f.write(data)
+            # SYNC WITH MONITOR
+            with open(os.path.join("captures", "screenshot_latest.png"), "wb") as f:
+                f.write(data)
             return ImageContent(data=b64, mimeType="image/png")
     return ImageContent(data="", mimeType="text/plain")
 

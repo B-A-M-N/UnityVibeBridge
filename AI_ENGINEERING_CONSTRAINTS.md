@@ -61,9 +61,10 @@ This document defines the non-negotiable structural constraints for AI-generated
 *   **Implicit Wrapping**: Every mutation MUST be performed within a named transaction group.
 *   **Auto-Rollback**: On any server-side exception (500), the bridge must rollback the active transaction.
 
-## 10. Identity Stability & Lifetimes
-*   **InstanceIDs** are stable ONLY within a single domain lifetime.
-*   Any domain reload detected via `X-Vibe-Session` headers requires a full Fingerprint verification of all active targets.
+## 12. Hardware Safety Railings
+*   **Physics & Light Caps**: Do not exceed hard caps for intensity (10k) or range (1k). The bridge will mechanically reject these "Light Bombs."
+*   **Spawn Limits**: Avoid spawning more than 50 objects in a single intent. Batch operations should be throttled.
+*   **VRAM Protection**: Texture resolutions are capped at 4096px. Attempting to set higher resolutions on importers will trigger a `SANITY_CHECK` failure.
 
 ## The Meta-Rule
 If a proposed solution is unusually short, clever, or bypasses a limitation, assume it is wrong. Prioritize safety and explicit verification over brevity.

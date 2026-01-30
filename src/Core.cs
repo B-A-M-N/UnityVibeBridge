@@ -29,21 +29,25 @@ namespace VibeBridge {
             
             LoadOrCreateSession();
             LoadRegistry();
+            InitializeTelemetry();
+            InitializeLifecycle(); // New Hook
             StartHttpServer();
             EditorApplication.update -= PollAirlock;
             EditorApplication.update += PollAirlock;
             _currentState = BridgeState.Running;
-            Debug.Log("[VibeBridge] Modular Server v16 Running.");
+            Debug.Log("[VibeBridge] Modular Server v16 Running with Telemetry & Lifecycle.");
         }
 
         private static void Teardown() {
             _currentState = BridgeState.Stopping;
             StopHttpServer();
             EditorApplication.update -= PollAirlock;
+            SetStatus("Stopped"); // Explicit signal
             _currentState = BridgeState.Stopped;
         }
 
         private static void PollAirlock() {
+            UpdateHeartbeat();
             if (_currentState != BridgeState.Running || _isProcessing) return;
             // if (EditorApplication.isPlaying || EditorApplication.isPaused) return;
 
