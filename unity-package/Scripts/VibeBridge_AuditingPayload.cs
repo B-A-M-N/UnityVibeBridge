@@ -15,8 +15,6 @@ using UnityEngine;
 namespace VibeBridge {
     public static partial class VibeBridgeServer {
         
-        [Serializable] public class PhysBoneRankRes { public BoneRankNode[] bones; [Serializable] public struct BoneRankNode { public string name; public float weight; public int childCount; } }
-
         public static string VibeTool_audit_avatar(Dictionary<string, string> q) {
             GameObject root = Resolve(q["path"]);
             if (root == null) return JsonUtility.ToJson(new BasicRes { error = "Root not found" });

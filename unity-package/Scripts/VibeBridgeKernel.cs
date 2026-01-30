@@ -43,6 +43,17 @@ namespace VibeBridge {
     [Serializable] public class ToolListRes { public string[] tools; }
     [Serializable] public class ErrorRes { public string[] errors; }
 
+    // --- PAYLOAD RESPONSE WRAPPERS ---
+    [Serializable] public class VramRes { public float vramMB; public int textures; }
+    [Serializable] public class MissingScriptsRes { public int missing; public BasicRes[] details; }
+    [Serializable] public class AvatarAuditRes { public string name; public RendererAudit[] renderers; }
+    [Serializable] public class RendererAudit { public string path; public int verts, mats; }
+    [Serializable] public class StaticFlagRes { public StaticFlagNode[] flags; [Serializable] public struct StaticFlagNode { public string name; public int value; } }
+    [Serializable] public class PhysicsAuditRes { public PhysicsNode[] physicsObjects; [Serializable] public struct PhysicsNode { public string name, type; public bool isKinematic, isTrigger; } }
+    [Serializable] public class AnimationAuditRes { public AnimatorNode[] animators; [Serializable] public struct AnimatorNode { public string name; public int missingClips; } }
+    [Serializable] public class FindRes { public BasicRes[] results; }
+    [Serializable] public class PhysBoneRankRes { public BoneRankNode[] bones; [Serializable] public struct BoneRankNode { public string name; public float weight; public int childCount; } }
+
     [InitializeOnLoad]
     public static partial class VibeBridgeServer {
         private enum BridgeState { Stopped, Starting, Running, Stopping }

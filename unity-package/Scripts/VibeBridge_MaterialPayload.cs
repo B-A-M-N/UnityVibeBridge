@@ -14,11 +14,6 @@ using UnityEngine;
 namespace VibeBridge {
     public static partial class VibeBridgeServer {
         
-        [Serializable] public class MatListRes { public MatNode[] materials; [Serializable] public struct MatNode { public int index; public string name; } }
-        [Serializable] public class MatPropRes { public string name, shader; public string[] properties; }
-        [Serializable] public class MatSnapshot { public string avatarName; public List<RendererSnapshot> renderers = new List<RendererSnapshot>(); }
-        [Serializable] public class RendererSnapshot { public string path; public List<string> materialGuids = new List<string>(); }
-
         public static string VibeTool_material_list(Dictionary<string, string> q) {
             GameObject go = Resolve(q["path"]);
             var r = go?.GetComponent<Renderer>();

@@ -22,16 +22,6 @@ using UnityEngine;
 namespace VibeBridge {
     public static partial class VibeBridgeServer {
         
-        // --- STANDARD UTILITY PAYLOAD WRAPPERS ---
-        [Serializable] public class VramRes { public float vramMB; public int textures; }
-        [Serializable] public class MissingScriptsRes { public int missing; public BasicRes[] details; }
-        [Serializable] public class AvatarAuditRes { public string name; public RendererAudit[] renderers; }
-        [Serializable] public class RendererAudit { public string path; public int verts, mats; }
-        [Serializable] public class StaticFlagRes { public StaticFlagNode[] flags; [Serializable] public struct StaticFlagNode { public string name; public int value; } }
-        [Serializable] public class PhysicsAuditRes { public PhysicsNode[] physicsObjects; [Serializable] public struct PhysicsNode { public string name, type; public bool isKinematic, isTrigger; } }
-        [Serializable] public class AnimationAuditRes { public AnimatorNode[] animators; [Serializable] public struct AnimatorNode { public string name; public int missingClips; } }
-        [Serializable] public class FindRes { public BasicRes[] results; }
-
         public static string VibeTool_system_vram_footprint(Dictionary<string, string> q) {
             GameObject obj = Resolve(q["path"]);
             if (obj == null) return JsonUtility.ToJson(new BasicRes { error = "Not found" });
@@ -215,23 +205,29 @@ namespace VibeBridge {
 
         // --- BACKGROUND ENGINES ---
         private static float _lastSyncTime = 0;
+        private static DateTime _lastRegistryWrite;
         public static void UpdateColorSync() {
-            if (Time.realtimeSinceStartup - _lastSyncTime < 0.1f) return; // 10Hz sync
+            if (Time.realtimeSinceStartup - _lastSyncTime < 0.1f) return; 
             _lastSyncTime = Time.realtimeSinceStartup;
 
-            GameObject root = GameObject.Find("ExtoPc"); // Canonical target
+            GameObject root = GameObject.Find("ExtoPc");
             if (root == null) return;
             var anim = root.GetComponent<Animator>();
             if (anim == null) return;
 
-            // Sync 'AccentAll' group to 'Color' animator param
             try {
-                float h = anim.GetFloat("Color");
-                float s = anim.GetFloat("ColorSat");
-                float v = anim.GetFloat("ColorPitch");
-                Color col = Color.HSVToRGB(h, s, v);
+                // Optimization: Only load registry if file changed
+                string p = "metadata/vibe_registry.json";
+                if (File.Exists(p)) {
+                    var writeTime = File.GetLastWriteTime(p);
+                    if (writeTime != _lastRegistryWrite) {
+                        _lastRegistryWrite = writeTime;
+                        LoadRegistry();
+                    }
+                }
                 
-                LoadRegistry();
+                float h = anim.GetFloat("Color"), s = anim.GetFloat("ColorSat"), v = anim.GetFloat("ColorPitch");
+                Color col = Color.HSVToRGB(h, s, v);
                 foreach (var entry in _registry.entries.Where(e => e.group == "AccentAll")) {
                     var go = EditorUtility.InstanceIDToObject(entry.lastKnownID) as GameObject;
                     var r = go?.GetComponent<Renderer>();
