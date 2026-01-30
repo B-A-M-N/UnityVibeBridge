@@ -26,9 +26,10 @@ Agents must follow a strict execution lifecycle to ensure state integrity:
 6. **Finalize**: `commit_transaction`.
 
 ### Core Safety Layers
-1. **The Kernel Guard**: Mechanically blocks mutations during **Compilation**, **Play Mode**, or **Asset Import**.
-2. **Time-Budgeted IPC**: Requests are processed in 5ms slices to maintain 60+ FPS in the Unity Editor.
-3. **Iron Box Security**: All mutations are registered with the `Undo` system and authenticated via `X-Vibe-Token`.
+1. **The Kernel Guard**: Mechanically blocks mutations during **Compilation**, **Play Mode**, or **Asset Import**. Check `metadata/vibe_status.json` before any mutation.
+2. **Iron Box Protocol**: Every mutation MUST be wrapped in `begin_transaction` and `commit_transaction`. All AI actions are single, clean Undo steps in Unity.
+3. **Time-Budgeted IPC**: Requests are processed in 5ms slices to maintain 60+ FPS in the Unity Editor.
+4. **Token Security**: All mutations are authenticated via `X-Vibe-Token`.
 
 ---
 
@@ -36,24 +37,37 @@ Agents must follow a strict execution lifecycle to ensure state integrity:
 - For instructions on how to manage AI behavior and prevent hallucinations, see [AI_PHILOSOPHY.md](AI_PHILOSOPHY.md).
 - For strict engineering rules, see [AI_ENGINEERING_CONSTRAINTS.md](AI_ENGINEERING_CONSTRAINTS.md).
 
-## Completed Features (Kernel v1.1 Hardened)
+## 🛠️ Unified Tool Inventory
 
-### 1. Safety & Stability (The Iron Box)
-*   **Main-Thread Time Budgeting**: The Kernel processes requests in 5ms slices, ensuring Unity remains at 60+ FPS even during heavy AI automation.
-*   **Zero-Latency Status**: Domain reloads are detected via `metadata/vibe_status.json`. The AI monitors `state` to prevent command poisoning.
-*   **Machine-Readable Diagnostics**: Unity streams structured console errors via `_vibe_warning` in the response JSON.
-*   **Implicit Transactions**: All mutations are wrapped in atomic `Undo` groups. One AI request = One Undo step.
+### 1. 🧠 Epistemic & Cognitive Governance
+*   **`inspect_object`**: Returns detailed components, tags, and transform state.
+*   **`get_telemetry_errors`**: Streams last 50 console errors for truth reconciliation.
+*   **`list_available_tools`**: Dynamic discovery of Payload capabilities.
 
-### 2. Deep Inspection & Precise Manipulation
-*   **Read-Before-Write**: Always `Inspect → Validate → Mutate → Verify`.
-*   **Stealth Framing**: `select_object` is focus-aware. It won't hijack the camera if the human is actively working in the Scene View unless `frame=true` is passed.
-*   **Component Discovery**: `system/find-by-component` allows finding functional targets (e.g. all PhysBones) without hierarchy traversal.
-*   **Batch Operations**: Rename, Reparent, and Delete in bulk for professional efficiency.
+### 2. 🛡️ Kernel & Integrity
+*   **`transaction_begin` / `commit` / `abort`**: Atomic Undo-Group management.
+*   **`guard/status`**: Checks for unsafe states (Compiling, Playing).
+*   **Time-Budgeting**: Enforcement of 5ms slices (Automatic).
 
-### 🎨 Technical Artist Tools (Standard Payload)
-*   **VRAM Auditing**: `calculate_vram_footprint` finds "PC Hidden Killers" (massive textures).
-*   **One-Click Quest Bake**: `swap_to_quest_shaders` and `crush_textures` automate the mobile transition.
-*   **Physics Audit**: `run_physics_audit` identifies all Rigidbodies and Colliders for optimization.
+### 3. 🏗️ Scene Manipulation
+*   **`get_hierarchy`**: Recursive Scene graph mapping.
+*   **`system/search`**: Regex & Layer-based discovery.
+*   **`rename_object` / `reparent_object`**: Identity and hierarchy mutations.
+*   **`clone_object` / `delete_object`**: Lifecycle management.
+*   **`select_object`**: Focus-aware selection (Stealth framing).
+
+### 4. 🎨 Technical Art & Optimization
+*   **`object/set-value`**: Generic reflection-based property mutation.
+*   **`vram_footprint`**: numerical GPU memory audit.
+*   **`texture_crush`**: Batch max-size reduction.
+*   **`swap_to_quest_shaders`**: Mobile material transition.
+*   **`opt/fork`**: Non-destructive material isolation.
+
+### 5. 🔗 Pipeline & Infrastructure
+*   **`world/spawn`**: Prefab instantiation.
+*   **`asset/rename` / `move`**: Project database management.
+*   **`export/validate`**: Blender-readiness checks.
+*   **`view/screenshot`**: High-speed visual verification.
 
 ### 🧹 Organizational Purity
 All agent outputs are neatly sorted to prevent root directory clutter:

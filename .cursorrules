@@ -16,7 +16,9 @@
 2. **Stealth Workflow**: Use `select_object(path, frame=true)` ONLY when you need to show the human a result. Default to background selection to avoid interrupting their flow.
 3. **Iron Box Protocol**: Every mutation MUST be wrapped in `begin_transaction` and `commit_transaction`.
 4. **Guard Awareness**: Check `metadata/vibe_status.json`. If it is not "Ready", HALT all mutations.
-5. **Self-Audit**: Before destructive operations, perform a technical review of your logic to identify potential failure points or Asset Database corruption risks.
+5. **Assume the Editor Lies**: Never trust a "Success" message. Verify state via `inspect` or `get_hierarchy` after every mutation.
+6. **Time Budget Awareness**: Operations are processed in 5ms slices. Do not attempt to bypass this throttling.
+7. **Cynical Self-Audit**: Before destructive operations, perform a technical review of your logic to identify potential failure points.
 
 ## 📁 File System Integrity
 - Write logs/data ONLY to `captures/`, `metadata/`, or `logs/`.
