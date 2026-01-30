@@ -58,12 +58,17 @@ Agents must follow a strict execution lifecycle to ensure state integrity:
 
 ### 4. 🎨 Technical Art & Optimization
 *   **`object/set-value`**: Generic reflection-based property mutation.
+*   **`material/list`**: Lists material slots on an object.
+*   **`material/inspect-properties`**: Returns all shader properties for a slot.
+*   **`material/set-color` / `set-texture`**: High-fidelity slot mutations.
 *   **`vram_footprint`**: numerical GPU memory audit.
 *   **`texture_crush`**: Batch max-size reduction.
 *   **`swap_to_quest_shaders`**: Mobile material transition.
 *   **`opt/fork`**: Non-destructive material isolation.
 
 ### 5. 🔗 Pipeline & Infrastructure
+*   **`registry/add`**: Persists a semantic role (e.g. "MainBody") for an object.
+*   **`registry/list`**: Returns all registered semantic targets.
 *   **`world/spawn`**: Prefab instantiation.
 *   **`asset/rename` / `move`**: Project database management.
 *   **`export/validate`**: Blender-readiness checks.

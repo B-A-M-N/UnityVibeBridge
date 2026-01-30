@@ -100,7 +100,7 @@ def unity_request(path, params=None, is_mutation=False):
 
 @mcp.tool()
 def bootstrap_vibe_bridge(project_path: str) -> str:
-    """Injects the VibeBridgeKernel.cs and Payloads into a new Unity project."""
+    """Injects the VibeBridgeKernel.cs and ALL Payloads into a new Unity project."""
     try:
         if ".." in project_path: return "Error: Path traversal blocked."
         
@@ -112,12 +112,14 @@ def bootstrap_vibe_bridge(project_path: str) -> str:
         if not os.path.exists(dest_dir): os.makedirs(dest_dir)
         if not os.path.exists(editor_dir): os.makedirs(editor_dir)
         
-        # Copy Kernel and Payloads
+        # Copy Kernel and ALL Payloads
         payloads = [
             "VibeBridgeKernel.cs", 
             "VibeBridge_StandardPayload.cs", 
             "VibeBridge_ExtrasPayload.cs",
-            "VibeBridge_VisionPayload.cs"
+            "VibeBridge_VisionPayload.cs",
+            "VibeBridge_MaterialPayload.cs",
+            "VibeBridge_RegistryPayload.cs"
         ]
         
         for f in payloads:
@@ -267,6 +269,36 @@ def move_asset(path: str, new_path: str) -> str:
 def apply_prefab_changes(path: str) -> str:
     """[Payload] Commits overrides on a prefab instance back to the master asset."""
     return str(unity_request("prefab/apply", {"path": path}, is_mutation=True))
+
+@mcp.tool()
+def list_materials(path: str) -> str:
+    """[Payload] Returns list of material slots on an object."""
+    return str(unity_request("material/list", {"path": path}))
+
+@mcp.tool()
+def inspect_material(path: str, index: int) -> str:
+    """[Payload] Returns all shader properties for a specific material slot."""
+    return str(unity_request("material/inspect-properties", {"path": path, "index": index}))
+
+@mcp.tool()
+def set_material_color(path: str, index: int, color: str) -> str:
+    """[Payload] Sets material color (format: 'r,g,b,a')."""
+    return str(unity_request("material/set-color", {"path": path, "index": index, "color": color}, is_mutation=True))
+
+@mcp.tool()
+def set_material_texture(path: str, index: int, field: str, texture_path: str) -> str:
+    """[Payload] Swaps a texture on a material slot."""
+    return str(unity_request("material/set-texture", {"path": path, "index": index, "field": field, "texture": texture_path}, is_mutation=True))
+
+@mcp.tool()
+def register_object(path: str, role: str, group: str = "default") -> str:
+    """[Payload] Persists a semantic role for an object (e.g. 'MainBody')."""
+    return str(unity_request("registry/add", {"path": path, "role": role, "group": group}, is_mutation=True))
+
+@mcp.tool()
+def list_registry() -> str:
+    """[Payload] Returns the full semantic registry."""
+    return str(unity_request("registry/list"))
 
 @mcp.tool()
 def take_screenshot() -> ImageContent:
