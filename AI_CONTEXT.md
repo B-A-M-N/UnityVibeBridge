@@ -1,31 +1,7 @@
 # UnityVibeBridge: The Governed Creation Kernel
 
-## 🧠 Understanding Your AI "Co-Pilot"
-
-### ⚙️ Demystifying the Magic: High-Fidelity Simulation
-Large Language Models (LLMs) are **Probability Engines** that have become exceptionally good at **simulating aspects of sentience**. They don't "know" facts or feel emotions; they predict the next most likely sequence of tokens based on patterns in their training data.
-
-In the context of Unity, the AI is not "visualizing" your Scene in a mind's eye. It is calculating the most statistically probable set of commands that align with your natural language intent.
-
-### 🏷️ The Implied Sentience Trap (Combating AI Psychosis)
-It is easy to fall into "magical thinking" when an AI responds with human-like warmth or technical authority. However, treating the AI as a sentient being can lead to **AI Psychosis**: a state where the user forgets the AI is a simulation and begins to trust its hallucinations as objective truth.
-
-### ⚔️ Combatting Overconfidence: Adversarial Prompting
-Use **Adversarial Prompting**. Ask the AI: *"I think this new logic is perfect. Now, I want you to act as a cynical auditor. Find 3 ways this could fail, crash Unity, or corrupt my Asset Database."*
-
-### 🧩 The Cognitive Gap
-Humans have a mental map of reality (e.g., you know that **Shoes are on Feet**). An AI does not "see" your Unity Scene; it only sees data patterns and names. 
-
-**UnityVibeBridge is designed to cure this drift by providing:**
-1. **Numerical Telemetry**: Replacing "imagined" scenes with hard vertex counts and coordinates.
-2. **Epistemic Reconciliation**: Forcing the AI to prove its assumptions against the actual Unity state via `audit_avatar`.
-3. **Kernel Governance**: Ensuring that even if the AI "hallucinates" a dangerous intent, the system mechanically prevents the damage via the **Kernel Guard**.
-
----
-
-## Concept: Mechanistic Vibe Coding
-
-**UnityVibeBridge** bridges the gap between AI agents and the Unity Editor. Instead of generating fragile C# scripts, it exposes a **Mechanistic Interface**—a set of deterministic tools to query state, inspect assets, and perform non-destructive modifications.
+## 🏛️ Technical Architecture
+UnityVibeBridge transforms the Unity Editor into a deterministic Control Plane. It allows AI agents to interact safely with Unity's core engine via a mechanistic interface.
 
 ### Core Architecture
 
@@ -39,6 +15,26 @@ graph LR
 1.  **AI Agent (Director)**: Issues high-level intents via MCP tool calls.
 2.  **MCP Server (Translator)**: Python server that translates agent calls into Unity requests.
 3.  **Unity Editor (Rigger)**: `VibeBridgeKernel.cs` executes operations using `Undo` and Reflection.
+
+### The "Director" Workflow
+Agents must follow a strict execution lifecycle to ensure state integrity:
+1. **Discover**: `get_hierarchy` / `search_objects` -> Build scene map.
+2. **Verify**: `inspect_object` -> Prove assumptions about components.
+3. **Protect**: `begin_transaction` -> Create an undo safety net.
+4. **Execute**: `rename` / `set_value` / `clone` -> Perform the mutation.
+5. **Observe**: Check `_vibe_warning` in the response for project errors.
+6. **Finalize**: `commit_transaction`.
+
+### Core Safety Layers
+1. **The Kernel Guard**: Mechanically blocks mutations during **Compilation**, **Play Mode**, or **Asset Import**.
+2. **Time-Budgeted IPC**: Requests are processed in 5ms slices to maintain 60+ FPS in the Unity Editor.
+3. **Iron Box Security**: All mutations are registered with the `Undo` system and authenticated via `X-Vibe-Token`.
+
+---
+
+## 📘 Further Reading
+- For instructions on how to manage AI behavior and prevent hallucinations, see [AI_PHILOSOPHY.md](AI_PHILOSOPHY.md).
+- For strict engineering rules, see [AI_ENGINEERING_CONSTRAINTS.md](AI_ENGINEERING_CONSTRAINTS.md).
 
 ## Completed Features (Kernel v1.1 Hardened)
 

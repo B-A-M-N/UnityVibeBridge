@@ -69,14 +69,10 @@ The system is split into two distinct layers to ensure absolute project safety:
 
 ---
 
-## 🧠 AI Literacy & Philosophy (Important)
-
-### 🏷️ The Implied Sentience Trap (Combating AI Psychosis)
-It is easy to fall into "magical thinking" when an AI responds with warmth. This project deliberately demystifies the LLM. Asking an AI *"What do you think?"* does not demonstrate consciousness; the AI is simply reflecting your intent to treat it as a thinking being.
-
-### ⚔️ Combatting Overconfidence: Adversarial Prompting
-If you feel you are doing something "groundbreaking," use **Adversarial Prompting**:
-Ask the AI: *"I think this logic is perfect. Now, act as a cynical auditor. Find 3 ways this could fail, crash Unity, or corrupt my Asset Database."*
+## 📘 User Guides & Philosophy
+*   **[AI Philosophy & Safety](AI_PHILOSOPHY.md)**: Learn how to manage AI behavior, prevent hallucinations, and use Adversarial Prompting.
+*   **[Engineering Constraints](AI_ENGINEERING_CONSTRAINTS.md)**: The strict technical rules governing all code generation.
+*   **[Contributing](CONTRIBUTING.md)**: Guidelines for extending the Kernel or adding new Payloads.
 
 ---
 

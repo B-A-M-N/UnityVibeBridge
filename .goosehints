@@ -18,9 +18,9 @@
 5. **Observe**: Check `_vibe_warning` in response for errors.
 6. **Finalize**: `commit_transaction`.
 
-## ⚔️ Combatting Hallucination: Adversarial Check
-Before executing any destructive mutation, perform an **Adversarial Check**:
-*"I think this logic is perfect. Now, act as a cynical auditor. Find 3 ways this could fail, crash Unity, or corrupt my Asset Database."*
+## 🛡️ Self-Verification
+Before executing any destructive mutation, perform a technical validation of your intent:
+*Identify potential failure points, dependency loops, or Asset Database corruption risks.*
 
 ## 🎨 Optimization Targets
 - **PC**: < 70k Polys, < 150MB VRAM.
