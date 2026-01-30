@@ -1,7 +1,7 @@
 # 🛡️ MCP Unity Kernel: The Canonical Creation Plane
 
 **Philosophy:** Unity is a hostile environment. This Kernel transforms it into a deterministic, irreducible Control Plane.
-**Status:** KERNEL v1.1 - IRREDUCIBLE CORE.
+**Status:** KERNEL v1.2 - PRODUCTION HARDENED.
 
 ---
 
@@ -12,24 +12,28 @@
 - **Single API Layer**: All mutations MUST go through `VibeBridgeKernel.cs`.
 - **Atomic Operations**: `transaction_begin` -> `Mutation` -> `transaction_commit`. Revert on fail via `transaction_abort`.
 - **The Guard**: Mechanical blocking of mutations during **Compilation**, **Play Mode**, or **Asset Import**.
+- **Time-Budgeted IPC**: Requests are processed in 5ms slices to maintain 60+ FPS responsiveness.
 
 ### 🛑 Corruption Defense
+- **Token-Auth Security**: Every HTTP request MUST include a valid `X-Vibe-Token` matching the session nonce.
 - **Read-Before-Write**: You MUST `inspect_object` before any mutation. Hallucination is strictly forbidden.
 - **Fail Fast**: Exceptions are never swallowed. They propagate directly to the AI/Human.
-- **Telemetry Hook**: Structured access to the last 50 Console Errors via `get_telemetry_errors`.
+- **Batch Editing**: HTTP mutations are wrapped in `AssetDatabase.StartAssetEditing()` for performance.
 
 ### 🧹 Infrastructure
 - **Airlock IPC**: File-based JSON queue (`vibe_queue/`) for high-reliability mutation survival.
-- **Express HTTP**: Port 8085 for telemetry and high-speed screenshots. Port 8086 for dedicated Vision Stream.
+- **Express HTTP**: Port 8085 for low-latency telemetry and screenshots. Port 8086 for dedicated Vision Stream.
 
 ---
 
-## 📦 2. THE PAYLOAD LAYER (VibeBridge_StandardPayload.cs)
-*High-level "Blades" for the Kernel.*
+## 📦 2. THE PAYLOAD LAYER
+*Modular "Blades" for specific technical art and rigging domains.*
 
-- **Technical Art**: `vram_footprint`, `texture_crush`, `swap_to_quest_shaders`.
-- **Intelligence**: `audit_avatar`, `run_physics_audit`, `run_animation_audit`.
-- **World Building**: `spawn_prefab`, `set_static_flags`.
+- **Standard**: `vram_footprint`, `texture_crush`, `swap_to_quest_shaders`.
+- **Material**: Atomic control over shader properties, slots, and persistent snapshots.
+- **Registry**: Semantic role memory (e.g. `sem:MainBody`) with mesh fingerprint fallback.
+- **Auditing**: `audit_avatar`, `physics_audit`, `animation_audit`.
+- **Vision**: MJPEG high-speed stream for AI visual verification.
 
 ---
 
@@ -47,7 +51,11 @@
 | Pain Point | Kernel Countermeasure |
 | :--- | :--- |
 | **Silent Corruption** | **Truth Loop Warning + Telemetry** |
-| **Undo Fragmentation** | **Atomic Undo Groups** |
+| **Undo Fragmentation** | **Atomic Undo Groups (Collapsed)** |
 | **Compilation Death** | **Kernel Guard State Gating** |
-| **Blind AI** | **Select & Frame (`select_object`)** |
+| **Blind AI** | **Select & Frame (`select_object`) + Vision Plane** |
 | **Architecture Drift** | **Irreducible Kernel + Modular Payloads** |
+| **UI Stutter** | **5ms Main-Thread Time Budgeting** |
+
+---
+**Copyright (C) 2026 B-A-M-N**
