@@ -1,0 +1,63 @@
+# UnityVibeBridge: Dual-License & Operation-Credit Agreement (v1.2)
+
+Copyright (C) 2026 B-A-M-N (The "Author")
+
+This project is distributed under a **Dual-Licensing Model** incorporating an **Open-Core with Remote Execution** framework. By using this software, you agree to be bound by the terms described below.
+
+---
+
+## 1. THE OPEN-SOURCE PATH: GNU AGPLv3
+For non-commercial use, hobbyists, and open-source contributors.
+
+The core bridging logic of UnityVibeBridge is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License (AGPLv3) as published by the Free Software Foundation. 
+
+**CRITICAL FOR CORPORATIONS:** The AGPLv3 requires that if you run a modified version of this software and allow others to interact with it over a network (or use it to produce commercial assets), you **MUST** make your entire source code available to the public. If you cannot or will not share your source code, you **MAY NOT** use this license and **MUST** pursue the Commercial Path below.
+
+---
+
+## 2. THE COMMERCIAL PATH: "WORK-OR-PAY" MODEL
+For entities generating revenue, commercial studios, or those who wish to keep their modifications private.
+
+To use UnityVibeBridge commercially without being subject to the AGPLv3 source-sharing requirements, you must satisfy **ONE** of the following:
+
+### A. Maintenance Contribution (Manpower)
+Documented and verified "Significant Maintenance Contributions" to the project (Code, Documentation, Infrastructure).
+### B. Commercial License Fee (Money)
+Payment of the stipulated commercial license fee.
+### C. Explicit Discretionary Waiver (The Author's Gift)
+The Author reserves the exclusive and absolute right to grant a full or partial waiver of fees and maintenance requirements to any individual or entity for any reason, at the Author's sole discretion.
+
+---
+
+## 3. OPEN-CORE, REMOTE OPERATION CREDITS & EARLY ACCESS
+UnityVibeBridge employs an **Open-Core** model where basic creation primitives are unrestricted. Advanced "Complex Operations" (e.g., Vision-augmented bakes or Remote compute) may be gated via the Orchestrator.
+
+**EARLY ACCESS PERIOD**: During the v0.x development phase, **ALL** features are provided at **Zero Cost** to encourage community testing. 
+
+**TRANSITION POLICY**: Upon the release of v1.0, the Author reserves the right to activate a **Credit-Gate** for high-compute or AI-driven operations. Notice of transition will be provided at least 30 days prior to enforcement.
+
+---
+
+## 4. CONTRIBUTOR GRANT OF RIGHTS & PROVENANCE
+By submitting any contribution (including code, assets, documentation, or feedback), you hereby grant the Author a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable copyright license to use, reproduce, prepare derivative works of, publicly display, and **sublicense** your contributions in both the open-source and commercial versions of the software.
+
+**TRACKING WAIVER**: This grant is made without the requirement for the Author to track, notify, or seek further approval from the Contributor for any future use. You represent that you are legally entitled to grant this license and that your contributions do not violate any third-party rights.
+
+---
+
+## 5. LIABILITY LIMITATION, INDEMNITY & AI DISCLAIMER
+
+1. **NO WARRANTY**: Software provided "AS IS." The Author is not responsible for the non-deterministic nature of AI-interpreted operations.
+2. **AI NON-DETERMINISM**: The Author is not liable for "hallucination drift," unintended asset deletion, or project corruption resulting from AI interpretation.
+3. **HUMAN-IN-THE-LOOP MANDATE**: All AI-suggested mutations are "Proposed" until a Human User executes a "Finalize" check. THE USER ACCEPTS FULL LEGAL RESPONSIBILITY FOR ANY CODE EXECUTED.
+4. **INDEMNIFICATION**: You agree to indemnify and hold harmless the Author from all claims arising from your use of the software or your breach of this license.
+5. **LIMITATION OF LIABILITY**: TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES (INCLUDING LOSS OF DATA, PROFITS, OR "VIBE").
+
+## 6. THIRD-PARTY IP & EULA COMPLIANCE
+
+1. **NON-AFFILIATION**: UnityVibeBridge is an independent project and is **not affiliated with, endorsed by, or sponsored by** Unity Technologies or any other third-party platform (e.g. VRChat).
+2. **USER RESPONSIBILITY**: Users are solely responsible for ensuring their use of this software complies with the End User License Agreements (EULA) and Terms of Service of Unity and VRChat.
+3. **NO BYPASS**: This software is not intended to bypass or violate any technical protections or licensing restrictions of the connected creative engines.
+
+---
+*For licensing inquiries or Discretionary Waivers, please contact the Author.*
