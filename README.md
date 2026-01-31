@@ -40,18 +40,6 @@ This project answers a critical engineering question:
 
 ---
 
-## 🧠 What This Project Demonstrates (Technical Audit)
-
-If you are evaluating this project as an engineer or hiring manager, this repository is a working demonstration of **AI Systems Engineering**:
-
-*   **Control-Plane vs. Execution-Plane Separation**: LLMs generate *intent* (Mechanistic Intents), never raw code execution.
-*   **Adversarial Security**: Hardened via local binding, session-token authentication, and **Recursive AST Auditing** of Python payloads.
-*   **Transactional State Mutation**: Every operation is wrapped in undo-safe, atomic blocks. **One AI request = One Undo step.**
-*   **Performance Budgeting**: Implements **5ms Main-Thread Time Budgeting** to ensure the Unity Editor maintains 60+ FPS even during heavy AI automation.
-*   **Truth Reconciliation Loop**: Tools like `get_telemetry_errors` force the agent to verify reality against intent in a closed feedback loop.
-
----
-
 ## ⚡ What you can do in 5 minutes
 
 1.  **Install**: Drag the `unity-package/` folder into your Unity project's `Assets/`.
@@ -177,6 +165,7 @@ While our "Iron Box" security model is strict, it is designed to **empower** cre
 ---
 
 ## 🏛️ Project Doctrine & Architecture
+*   **[For Hiring Managers](HUMAN_ONLY/FOR_HIRING_MANAGERS.md)**: In-depth engineering audit and systems design breakdown.
 *   **[Vision & Philosophy](HUMAN_ONLY/VISION.md)**: Deep dive into the architectural goals and problem space.
 *   **[Technical Architecture](AI_CONTEXT.md)**: High-level overview of the Control-Plane vs. Execution-Plane.
 *   **[Non-Goals & Doctrine](NON_GOALS.md)**: The intentional limitations and philosophical guardrails of the project.
