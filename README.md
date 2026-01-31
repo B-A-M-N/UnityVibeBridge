@@ -128,7 +128,7 @@ Unlike standard script-bridges, UnityVibeBridge treats the AI as an **untrusted 
 
 ## 🛡️ Iron Box Security
 The bridge is hardened via four distinct layers:
-1.  **AST Auditing**: All incoming tool calls are audited by `security_gate.py` for forbidden patterns.
+1.  **AST Auditing**: All incoming tool calls are audited by `scripts/security_gate.py` for forbidden patterns.
 2.  **Token Authentication**: Port 8085 requires an `X-Vibe-Token` matching the current session.
 3.  **Iron Box Protocol**: Every mutation is wrapped in atomic `Undo` groups. **One AI Request = One Undo Step.**
 4.  **The Guard**: The bridge physically disables mutations if `vibe_status.json` is not "Ready".
@@ -147,6 +147,22 @@ New to AI development in Unity? Start here to understand the philosophy, safety 
 *   **[Full Feature Manifest](HUMAN_ONLY/FEATURES.md)**: Authoritative list of all functional abilities and roadmap.
 *   **[Technical Installation & Engineering](HUMAN_ONLY/INSTALL.md)**: Deep dive into the Kernel architecture, security, and advanced setup.
 *   **[AI Philosophy & Safety](HUMAN_ONLY/FOR_BEGINNERS.md)**: Learn how to manage AI behavior and prevent "AI Psychosis."
+
+---
+
+## 🌐 The VibeBridge Ecosystem
+
+UnityVibeBridge is part of a trinity of tools designed for seamless AI-assisted creation:
+*   **[BlenderVibeBridge](https://github.com/B-A-M-N/BlenderVibeBridge)**: The companion kernel for high-fidelity 3D modeling and rigging.
+*   **[VibeSync](https://github.com/B-A-M-N/VibeSync)**: The orchestration layer that synchronizes state between Unity and Blender.
+
+---
+
+## 🤝 Community & Softening the "Iron Box"
+
+While our "Iron Box" security model is strict, it is designed to **empower** creators, not restrict them. The guardrails exist so you can experiment freely without fear of destroying your work.
+
+**New to the project?** Don't be intimidated by the technical intensity. We welcome contributors of all skill levels. If you have an idea for a new Payload or a better way to visualize data, jump in! Our [Beginner's Guide](HUMAN_ONLY/FOR_BEGINNERS.md) and [Contributing Guidelines](HUMAN_ONLY/CONTRIBUTING.md) are there to help you navigate the Kernel safely.
 
 ---
 

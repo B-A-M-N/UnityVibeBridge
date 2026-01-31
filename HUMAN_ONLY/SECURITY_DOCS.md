@@ -7,13 +7,13 @@ This document outlines the security measures, architectural invariants, and safe
 Security has been moved from **Instructions** (which an agent can ignore) to **Infrastructure** (which an agent cannot change). The system uses a multi-layered defense-in-depth approach.
 
 ### 1. OS-Level Isolation (The Sandbox)
-The agent is designed to run within a **Docker Container** (`Dockerfile.sandbox`).
+The agent is designed to run within a **Docker Container** (`scripts/Dockerfile.sandbox`).
 *   **Filesystem Scoping:** The agent only sees the `/workspace` directory (the project folder). It has no access to host SSH keys, documents, or system configurations.
 *   **Ephemeral State:** Any malicious tools or persistent backdoors installed by a hijacked agent are wiped when the container is stopped.
 *   **Non-Root Execution:** The agent runs as a restricted `sandbox` user inside the container.
 
 ### 2. The Security Gate (Static Analysis)
-Every file write and shell command passes through a robust, context-aware auditor (`security_gate.py`) that uses **AST (Abstract Syntax Tree)** parsing rather than brittle regex.
+Every file write and shell command passes through a robust, context-aware auditor (`scripts/security_gate.py`) that uses **AST (Abstract Syntax Tree)** parsing rather than brittle regex.
 
 *   **Python AST Audit:**
     *   **Logic over Text:** Detects malicious intent even if obfuscated (e.g., handles dynamic attribute access).
@@ -35,7 +35,7 @@ The system is "Smart" to reduce approval fatigue:
 A persistent hashing system (`trusted_signatures.json`) allows for "Risky but Safe" code to be authorized.
 *   **Fingerprinting:** Generates a SHA-256 hash of approved code blocks.
 *   **Zero-Trust AI:** The AI agent is **hard-blocked** from modifying the trust registry. It has no tools to "Trust" its own code and the shell auditor blocks use of the `--trust` flag by the agent.
-*   **Manual Override:** Only a human user at the physical terminal can authorize a high-risk script by running `python3 security_gate.py <file> --trust`.
+*   **Manual Override:** Only a human user at the physical terminal can authorize a high-risk script by running `python3 scripts/security_gate.py <file> --trust`.
 
 ---
 
@@ -50,7 +50,7 @@ The Orchestrator is hardened against prompt injection and malicious asset payloa
 
 ### Integrated Agent Environment
 *   **Unified CLI:** Combines the `goose` Rust engine with a Python MCP server.
-*   **One-Click Launch:** `start_sandbox.sh` automates the build and deployment of the secure environment.
+*   **One-Click Launch:** `scripts/start_sandbox.sh` automates the build and deployment of the secure environment.
 
 ### Unity VibeBridge API
 *   **Transaction Safety:** All mutations (colors, transforms, components) are wrapped in Unity Undo transactions.
@@ -68,7 +68,7 @@ All contributors and AI agents must adhere to the rules in `AI_ENGINEERING_CONST
 1.  **Never mount the Docker Socket.**
 2.  **Never run the sandbox with `--privileged`.**
 3.  **Always verify "Trust" requests manually.**
-4.  **Keep the `security_gate.py` outside of the AI's write-access if running "on the metal".**
+4.  **Keep the `scripts/security_gate.py` outside of the AI's write-access if running "on the metal".**
 
 ---
 **Copyright (C) 2026 B-A-M-N**

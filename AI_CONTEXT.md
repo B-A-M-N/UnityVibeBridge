@@ -106,7 +106,7 @@ If you point the agent to a new project, it can "self-install" the bridge:
 For maximum safety, run the agent in an isolated Docker sandbox. This prevents the agent from seeing your personal files and restricts it to your project folder.
 
 ### 🔐 The Security Gate
-Every code modification and shell command is audited by `security_gate.py` using AST logic analysis.
+Every code modification and shell command is audited by `scripts/security_gate.py` using AST logic analysis.
 *   **Automatic Blocking**: Malicious imports and external network calls are blocked silently.
 *   **Human Trust**: High-risk operations must be manually authorized.
 

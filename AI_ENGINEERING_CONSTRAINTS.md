@@ -6,7 +6,7 @@ All code generation and AI operations for this project MUST strictly adhere to t
 
 ## 0. Security Constitutional Mandate
 - **Policy Adherence**: You MUST read and abide by `AI_SECURITY_THREAT_ACCEPTANCE.md`. 
-- **Enforcement**: Every code modification is audited by `security_gate.py`. Attempting to modify or bypass the gate constitutes a Critical System Risk.
+- **Enforcement**: Every code modification is audited by `scripts/security_gate.py`. Attempting to modify or bypass the gate constitutes a Critical System Risk.
 
 ---
 

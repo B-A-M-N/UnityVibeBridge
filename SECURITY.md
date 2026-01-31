@@ -12,14 +12,14 @@ The agent is designed to run within a **Docker Container** (`Dockerfile.sandbox`
 *   **Non-Root Execution:** The agent runs as a restricted `sandbox` user inside the container.
 
 ### 2. The Security Gate (Static Analysis)
-Every file write and shell command passes through a context-aware auditor (`security_gate.py`) using **AST (Abstract Syntax Tree)** parsing.
+Every file write and shell command passes through a context-aware auditor (`scripts/security_gate.py`) using **AST (Abstract Syntax Tree)** parsing.
 
 *   **Python AST Audit:** Detects malicious intent even if obfuscated. Hard blocks `os`, `subprocess`, `socket`, and `pty` unless used through "Safe Lane" wrappers.
 *   **C# Lexical Audit:** Blocks high-risk namespaces like `System.Diagnostics` and `System.Reflection`.
 *   **Shell Whitelist:** Only allows a specific list of "Safe" commands (`git`, `python`, `cargo`) and blocks pipes (`|`) or redirects (`>`).
 
 ### 3. Trusted Signature System (Human-in-the-Loop)
-A persistent hashing system (`trusted_signatures.json`) allows for "Risky but Safe" code to be authorized by a human user at the physical terminal via `python3 security_gate.py <file> --trust`. **The AI agent is hard-blocked from modifying this registry.**
+A persistent hashing system (`trusted_signatures.json`) allows for "Risky but Safe" code to be authorized by a human user at the physical terminal via `python3 scripts/security_gate.py <file> --trust`. **The AI agent is hard-blocked from modifying this registry.**
 
 ---
 

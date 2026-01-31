@@ -1,11 +1,21 @@
 # Contributing to UnityVibeBridge
 
-Thank you for your interest in improving UnityVibeBridge! Because this is a **Governed Creation Kernel**, we maintain strict standards for security, stability, and performance. This project is built on the principle of **Mechanistic Vibe Coding**. All contributors must respect the structural safety constraints that prevent AI agents from corrupting user data.
+Thank you for your interest in improving UnityVibeBridge! This project is built on the principle of **Mechanistic Vibe Coding**. While we maintain strict technical standards, we are committed to building a community where everyone can contribute safely and effectively.
+
+---
+
+## 👋 Welcome to the Vibe
+Don't be intimidated by the "Iron Box" or the technical jargon. These safeguards exist so you can experiment, build, and break things **safely**. We prioritize Editor stability and user flow, but we also value creativity and new ideas.
+
+**How you can help:**
+- **Payloads**: Create new tools for Technical Art, Animation, or World-building.
+- **Documentation**: Help us make our guides even more accessible to beginners.
+- **Testing**: Find edge cases and help us harden the Kernel.
 
 ---
 
 ## 🛡️ The Creation Kernel Standards
-All pull requests must adhere to the **Kernel v1.1 Architecture**. We prioritize Editor stability and user flow over feature speed.
+All pull requests must adhere to the **Kernel v1.1 Architecture**. 
 
 ### 1. **Zero-Trust Adherence**
 Every new tool or modification **MUST** adhere to `AI_ENGINEERING_CONSTRAINTS.md`. 
@@ -19,7 +29,7 @@ Every new tool or modification **MUST** adhere to `AI_ENGINEERING_CONSTRAINTS.md
 - **Payloads**: All new creative features (Tech Art, Animation, etc.) MUST be implemented as separate "Payload" files.
 
 ### 3. **Structured Response Mandate**
-ALL new tool methods must return JSON generated via **Serializable Response Classes** (e.g., `BasicRes`). Manual string concatenation for JSON is strictly forbidden to prevent injection and syntax errors.
+ALL new tool methods must return JSON generated via **Serializable Response Classes** (e.g., `BasicRes`). Manual string concatenation for JSON is strictly forbidden.
 
 ### 4. **Performance (The 5ms Rule)**
 Every operation must be compatible with the **Time-Budgeted Execution** model. If a tool performs heavy computation, it must be designed to yield or be time-sliced to prevent dropping Unity's framerate.
@@ -33,17 +43,17 @@ Never attempt to access or write to the `HUMAN_ONLY/` directory. This is a void 
 Any new mutation tool must follow the **Atomic Guard** pattern:
 
 1.  **Call `EnsureSafeMutationContext`**: Always verify that Unity is not compiling, not in play mode, and not in read-only mode at the very start of the operation.
-2.  **Verify Provenance**: If a tool deletes or moves objects, it must check for the `VibeBridgeAgentTag` component to ensure it isn't touching user-owned assets.
+2.  **Verify Provenance**: If a tool deletes or moves objects, it must check for the `VibeBridgeAgentTag` component.
 3.  **Support Undo**: Every write operation MUST use `Undo.RecordObject`, `Undo.AddComponent`, or `Undo.DestroyObjectImmediate`.
 4.  **No Silent Failures**: Propagate all exceptions as `ErrorResponse` with `HardStop` severity.
 
 ---
 
 ## 🛠️ Local Development & Testing
-1.  **C# Audit**: Ensure your code passes the `security_gate.py` patterns.
+1.  **C# Audit**: Ensure your code passes the `scripts/security_gate.py` patterns.
 2.  **Telemetry**: Verify that exceptions are correctly propagated back to the AI through the telemetry loop.
 3.  **Undo System**: Every mutation MUST be registered with the `Undo` system.
-4.  **Capability Discovery**: If you add a new type of manipulation (e.g., modifying Animator Controllers), you MUST update `GetObjectCapabilities` to reflect the risks and requirements of that operation.
+4.  **Capability Discovery**: If you add a new type of manipulation, you MUST update `GetObjectCapabilities` to reflect the risks and requirements.
 
 ---
 

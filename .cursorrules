@@ -3,7 +3,7 @@
 ## 🏛️ Architectural Context
 - **Security Policy**: Bound by `AI_SECURITY_THREAT_ACCEPTANCE.md` and Kernel v1.2.1.
 - **The Kernel (`VibeBridgeKernel.cs`)**: The ONLY authorized mutation path. Irreducible and authenticated.
-- **The Gate**: Every file change is audited by `security_gate.py`.
+- **The Gate**: Every file change is audited by `scripts/security_gate.py`.
 
 ## 🛡️ Hard Bans (Mechanical Rejection)
 - **NO Direct Reflection**: Do not bypass the bridge via `System.Reflection`.
