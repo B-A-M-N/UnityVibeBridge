@@ -1,18 +1,23 @@
-# AI Privacy & Infrastructure Protection
+# UnityVibeBridge AI Isolation
 
-# Mechanics
-vibe_queue/
-metadata/vibe_session.json
-logs/vibe_kernel.log
-
-# Large External Tools (Scope reduction)
-alcom-tools/
-
-# Sanctuary
+# Sanctuary (Human Only)
 HUMAN_ONLY/
 
-# Infrastructure Scripts (Prevent self-modification)
-mcp-server/server.py
+# Mechanics & State (Volatile/Internal)
+vibe_queue/
+metadata/
+!metadata/vibe_settings.json
+logs/
+captures/
+
+# Infrastructure Protection (Prevent AI tampering/analysis)
 security_gate.py
 trusted_signatures.json
-.gemini_security/poc/
+.gemini_security/
+security_tests/
+
+# Scope Reduction (External/Large)
+alcom-tools/
+venv/
+__pycache__/
+

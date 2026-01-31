@@ -1,0 +1,8 @@
+# Windsurf Behavior: UnityVibeBridge Kernel
+
+## 🏛️ Kernel v1.2.1 Mandates
+- **Zero-Trust**: Read-Before-Write (`inspect_object`) is mandatory.
+- **Resiliency**: Use `sem:` prefix for all functional lookups.
+- **Forensics**: Your mutations are cryptographically chained. Provide clear rationale for every action.
+- **Performance**: Batch commands via `execute_recipe` to maintain 60+ FPS Unity responsiveness.
+- **Kill-Switch**: Respect the Human Veto in `vibe_status.json`.

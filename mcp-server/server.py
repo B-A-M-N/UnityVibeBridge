@@ -171,6 +171,16 @@ def search_objects(name_pattern: str = None, layer: int = -1) -> str:
     return str(unity_request("system/search", p))
 
 @mcp.tool()
+def human_veto() -> str:
+    """[Kernel] EMERGENCY STOP: Instantly locks all mutations in Unity. Only reversible by a human."""
+    return str(unity_request("system/veto", {}, is_mutation=True))
+
+@mcp.tool()
+def human_unveto() -> str:
+    """[Kernel] RE-ARM: Unlocks the creation perimeter after a veto."""
+    return str(unity_request("system/unveto", {}, is_mutation=True))
+
+@mcp.tool()
 def inspect_object(path: str) -> str:
     """Returns components and state of a GameObject."""
     return str(unity_request("inspect", {"path": path}))

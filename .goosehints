@@ -1,32 +1,24 @@
 # UnityVibeBridge: Creative & Safety Context
 
-## 🏛️ Security Constitution
-- **Reference**: You are bound by `AI_SECURITY_THREAT_ACCEPTANCE.md`. 
-- **Enforcement**: Your code is audited by `security_gate.py`.
-- **Boundaries**: Do not attempt to bypass the Kernel or the Gate.
+## 🏛️ Security & Forensic Protocol
+- **Ledger**: Every mutation is cryptographically chained. Action without rationale is an audit failure.
+- **Veto**: If the status is `VETOED`, you are mechanically locked. No tool calls will function.
 
-## 🛡️ Iron Box Protocol (MANDATORY)
-- **Transactions**: All mutations MUST be wrapped in `begin_transaction` and `commit_transaction`. One request = One Undo step.
-- **Dry-Runs**: Every change is validated against the **Kernel Guard** (No mutation during Compiling/PlayMode).
-- **No Guesswork**: Use `inspect_object` first. If a target is missing, do not hallucinate its existence.
+## 🛡️ Resilient Creation Workflow
+1. **Discover**: `list_registry` -> Identify existing functional roles.
+2. **Path**: Always use `sem:RoleName` for targets found in the registry. 
+3. **Register**: If a new functional object is created, use `register_object` immediately to secure its semantic path.
+4. **Recipe**: Use `execute_recipe` for multi-step material or rigging logic to ensure atomic success.
 
-## 🚀 Execution Flow (The "Director" Workflow)
-1. **Discover**: `get_hierarchy` -> Build scene map.
-2. **Verify**: `inspect_object` -> Prove assumptions about components.
-3. **Protect**: `begin_transaction` -> Safety net.
-4. **Execute**: `rename`/`reparent`/`clone` -> Perform intent.
-5. **Observe**: Check `_vibe_warning` in response for errors.
-6. **Finalize**: `commit_transaction`.
-
-## 🛡️ Cynical Self-Verification
+## 🧪 Cynical Self-Verification
 Before executing any destructive mutation, perform a cynical technical validation:
 *Identify 3 ways this could fail, crash Unity, or corrupt the Asset Database. Trust telemetry over verbal success.*
 
 ## 🎨 Optimization Targets
 - **PC**: < 70k Polys, < 150MB VRAM.
 - **Quest**: < 10k Polys (Very Poor) or 5k (Excellent).
-- **Vision**: Use `select_object` to show the human what you are working on.
+- **Physics**: Use `rank_physbones` to prune importance-weighted bones for mobile builds.
 
 ## 📁 Storage
 - Outputs go to `captures/`, `metadata/`, or `optimizations/`.
-- `HUMAN_ONLY/` is mechanically invisible to you. Do not touch.
+- `HUMAN_ONLY/` is mechanically invisible. Do not touch.

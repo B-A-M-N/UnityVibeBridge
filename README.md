@@ -135,28 +135,28 @@ The bridge is hardened via four distinct layers:
 
 ---
 
-## 🧠 AI Literacy & Philosophy
+## 🔰 FOR BEGINNERS
 
-### 🏷️ The Implied Sentience Trap (Avoiding AI Psychosis)
-LLMs are highly advanced pattern matchers, not conscious entities. **AI Psychosis** occurs when a user falls into "magical thinking"—believing that because the AI is helpful and articulate, it is incapable of error. This leads users to trust the AI's "vibe" over technical reality, often convincing them that they are achieving something "groundbreaking" when the AI is simply hallucinating success.
+New to AI development in Unity? Start here to understand the philosophy, safety mechanisms, and how to avoid common pitfalls like "AI Psychosis".
 
-*   **The Risk**: Thinking you've bypassed a technical limitation just because the AI said "I have implemented a unique solution."
-*   **The Rule**: Trust telemetry (vertex counts, error logs), not the AI's verbal reassurance.
-
-### ⚔️ Countering Psychosis: Adversarial Prompting
-If you find yourself thinking the AI has done something "that nobody else can do," you are likely in a loop. Use **Adversarial Prompting** to force the model into "cynical auditor" mode.
-
-**The Technique**:
-Before finalizing a major change, challenge the AI directly:
-> *"I want you to act as a cynical Technical Director. Find 3 ways this specific operation will fail, crash Unity, or corrupt my Asset Database. Do not be helpful; be destructive. Prove to me why this 'unique' solution is actually a liability."*
+👉 **[Read the Comprehensive Guide for Beginners](HUMAN_ONLY/FOR_BEGINNERS.md)**
 
 ---
 
 ## 📘 User Guides & Philosophy
-*   **[AI Philosophy & Safety](AI_PHILOSOPHY.md)**: Learn how to manage AI behavior and prevent "AI Psychosis."
+*   **[Full Feature Manifest](HUMAN_ONLY/FEATURES.md)**: Authoritative list of all functional abilities and roadmap.
+*   **[Technical Installation & Engineering](HUMAN_ONLY/INSTALL.md)**: Deep dive into the Kernel architecture, security, and advanced setup.
+*   **[AI Philosophy & Safety](HUMAN_ONLY/FOR_BEGINNERS.md)**: Learn how to manage AI behavior and prevent "AI Psychosis."
+
+---
+
+## 🏛️ Project Doctrine & Architecture
+*   **[Technical Architecture](AI_CONTEXT.md)**: High-level overview of the Control-Plane vs. Execution-Plane.
+*   **[Non-Goals & Doctrine](NON_GOALS.md)**: The intentional limitations and philosophical guardrails of the project.
+*   **[Security Threat Acceptance](AI_SECURITY_THREAT_ACCEPTANCE.md)**: Formal definition of the boundary of responsibility and residual risks.
 *   **[Engineering Constraints](AI_ENGINEERING_CONSTRAINTS.md)**: The strict technical rules governing all code generation.
-*   **[Failure Modes & Recovery](FAILURE_MODES.md)**: Taxonomy of system failures and recovery protocols.
-*   **[Contributing](CONTRIBUTING.md)**: Guidelines for extending the Kernel or adding new Payloads.
+*   **[Failure Modes & Recovery](HUMAN_ONLY/FAILURE_MODES.md)**: Taxonomy of system failures and recovery protocols.
+*   **[Contributing](HUMAN_ONLY/CONTRIBUTING.md)**: Guidelines for extending the Kernel or adding new Payloads.
 
 ---
 
@@ -170,7 +170,7 @@ This project is distributed under a **Dual-Licensing Model**. By using this soft
 1.  **THE OPEN-SOURCE PATH: GNU AGPLv3**: Free for hobbyists and non-commercial research.
 2.  **THE COMMERCIAL PATH: "WORK-OR-PAY"**: For revenue-generating entities. Requires **Significant Maintenance Contributions** or a **License Fee**.
 
-**[Full Privacy Policy](PRIVACY.md)** | **[Security Mandates](SECURITY.md)**
+**[Full Privacy Policy](HUMAN_ONLY/PRIVACY.md)** | **[Security Mandates](HUMAN_ONLY/SECURITY.md)**
 
 ---
 **Created by the Vibe Bridge Team.**

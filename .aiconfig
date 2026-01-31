@@ -1,1 +1,13 @@
-{"ignore": ["HUMAN_ONLY/"]}
+{
+  "project": "UnityVibeBridge",
+  "version": "1.2.1",
+  "mode": "Creation Kernel",
+  "primary_context": ["AI_CONTEXT.md", "AI_PHILOSOPHY.md", "AI_ENGINEERING_CONSTRAINTS.md"],
+  "behavior": {
+    "trust_level": "Zero-Trust",
+    "verification": "Required",
+    "targeting": "Semantic (sem:)",
+    "performance": "Time-Budgeted (5ms)"
+  },
+  "ignore": ["HUMAN_ONLY/", ".git/", "venv/", "__pycache__/"]
+}

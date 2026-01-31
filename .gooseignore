@@ -1,2 +1,23 @@
+# UnityVibeBridge AI Isolation
+
+# Sanctuary (Human Only)
 HUMAN_ONLY/
-SECURITY_DOCS.md
+
+# Mechanics & State (Volatile/Internal)
+vibe_queue/
+metadata/
+!metadata/vibe_settings.json
+logs/
+captures/
+
+# Infrastructure Protection (Prevent AI tampering/analysis)
+security_gate.py
+trusted_signatures.json
+.gemini_security/
+security_tests/
+
+# Scope Reduction (External/Large)
+alcom-tools/
+venv/
+__pycache__/
+

@@ -43,8 +43,8 @@ Agents must follow a strict execution lifecycle to ensure state integrity:
 ### 2. 🛡️ Kernel & Integrity
 *   **`transaction_begin` / `commit` / `abort`**: Atomic Undo-Group management.
 *   **`system/execute-recipe`**: Atomic multi-tool batch execution.
-*   **`guard/status`**: Checks for unsafe states (Compiling, Playing).
-*   **Time-Budgeting**: Enforcement of 5ms slices (Automatic).
+*   **`system/veto` / `unveto`**: Mechanical human kill-switch (Emergency Stop).
+*   **guard/status**: Checks for unsafe states (Compiling, Playing).
 
 ### 3. 🏗️ Scene Manipulation
 *   **`get_hierarchy`**: Recursive Scene graph mapping.
@@ -113,7 +113,7 @@ Every code modification and shell command is audited by `security_gate.py` using
 ---
 
 ## 📘 Further Reading
-- For instructions on how to manage AI behavior and prevent hallucinations, see [AI_PHILOSOPHY.md](AI_PHILOSOPHY.md).
+- For instructions on how to manage AI behavior and prevent hallucinations, see [FOR_BEGINNERS.md](FOR_BEGINNERS.md).
 - For strict engineering rules, see [AI_ENGINEERING_CONSTRAINTS.md](AI_ENGINEERING_CONSTRAINTS.md).
 
 ---

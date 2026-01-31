@@ -22,7 +22,6 @@ using UnityEditor;
 using UnityEngine;
 
 namespace VibeBridge {
-    [Serializable] public class SessionData { public string sessionNonce; public List<int> createdObjectIds = new List<int>(); }
     [Serializable] public class AirlockCommand { public string action, id, capability; public string[] keys, values; }
     [Serializable] public class RecipeCommand { public AirlockCommand[] tools; }
     [Serializable] public class KernelSettings {
@@ -43,16 +42,15 @@ namespace VibeBridge {
     [Serializable] public class ToolListRes { public string[] tools; }
     [Serializable] public class ErrorRes { public string[] errors; }
 
-    // --- PAYLOAD RESPONSE WRAPPERS ---
-    [Serializable] public class VramRes { public float vramMB; public int textures; }
-    [Serializable] public class MissingScriptsRes { public int missing; public BasicRes[] details; }
-    [Serializable] public class AvatarAuditRes { public string name; public RendererAudit[] renderers; }
-    [Serializable] public class RendererAudit { public string path; public int verts, mats; }
-    [Serializable] public class StaticFlagRes { public StaticFlagNode[] flags; [Serializable] public struct StaticFlagNode { public string name; public int value; } }
-    [Serializable] public class PhysicsAuditRes { public PhysicsNode[] physicsObjects; [Serializable] public struct PhysicsNode { public string name, type; public bool isKinematic, isTrigger; } }
-    [Serializable] public class AnimationAuditRes { public AnimatorNode[] animators; [Serializable] public struct AnimatorNode { public string name; public int missingClips; } }
-    [Serializable] public class FindRes { public BasicRes[] results; }
-    [Serializable] public class PhysBoneRankRes { public BoneRankNode[] bones; [Serializable] public struct BoneRankNode { public string name; public float weight; public int childCount; } }
+    // --- FORENSIC WRAPPERS ---
+    [Serializable] public class AuditEntry {
+        public string prevHash;
+        public string timestamp;
+        public string capability;
+        public string action;
+        public string details;
+        public string entryHash;
+    }
 
     [InitializeOnLoad]
     public static partial class VibeBridgeServer {
@@ -60,7 +58,9 @@ namespace VibeBridge {
         private static BridgeState _currentState = BridgeState.Stopped;
         private static string _inboxPath, _outboxPath;
         private static bool _isProcessing = false;
+        private static bool _isVetoed = false;
         private static string _persistentNonce = null;
+        private static string _lastAuditHash = "GENESIS";
         private static List<string> _errors = new List<string>();
         private static KernelSettings _settings = new KernelSettings();
 
@@ -108,7 +108,7 @@ namespace VibeBridge {
 
         private static void PollAirlock() {
             UpdateHeartbeat();
-            if (_currentState != BridgeState.Running || _isProcessing) return;
+            if (_currentState != BridgeState.Running || _isProcessing || _isVetoed) return;
             HandleHttpRequests();
             UpdateColorSync(); // Restored background engine
             
@@ -155,6 +155,12 @@ namespace VibeBridge {
                 if (method == null) return JsonUtility.ToJson(new BasicRes { error = "Tool not found: " + path });
                 var query = new Dictionary<string, string>();
                 if (cmd.keys != null && cmd.values != null) for (int i = 0; i < Math.Min(cmd.keys.Length, cmd.values.Length); i++) query[cmd.keys[i]] = cmd.values[i];
+                
+                // --- FORENSIC LOGGING ---
+                if (!string.IsNullOrEmpty(cmd.capability) && !cmd.capability.Equals("read", StringComparison.OrdinalIgnoreCase)) {
+                    LogMutation(cmd.capability, cmd.action, JsonUtility.ToJson(cmd));
+                }
+
                 return (string)method.Invoke(null, new object[] { query });
             } catch (Exception e) { return JsonUtility.ToJson(new BasicRes { error = e.Message }); }
         }
@@ -192,7 +198,17 @@ namespace VibeBridge {
             } catch (Exception e) { return JsonUtility.ToJson(new BasicRes { error = e.Message }); }
         }
 
-        public static string VibeTool_status(Dictionary<string, string> q) { return "{\"status\":\"connected\",\"kernel\":\"v1.1\"}"; }
+        public static string VibeTool_status(Dictionary<string, string> q) { return "{\"status\":\"connected\",\"kernel\":\"v1.1\",\"vetoed\":" + _isVetoed.ToString().ToLower() + "}"; }
+        
+        public static string VibeTool_system_veto(Dictionary<string, string> q) {
+            _isVetoed = true; SetStatus("VETOED");
+            return JsonUtility.ToJson(new BasicRes { message = "KERNEL LOCKED BY HUMAN VETO" });
+        }
+
+        public static string VibeTool_system_unveto(Dictionary<string, string> q) {
+            _isVetoed = false; SetStatus("Ready");
+            return JsonUtility.ToJson(new BasicRes { message = "KERNEL ARMED" });
+        }
         public static string VibeTool_system_list_tools(Dictionary<string, string> q) {
             var tools = typeof(VibeBridgeServer).GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Where(m => m.Name.StartsWith("VibeTool_")).Select(m => m.Name.Substring(9).Replace("_", "/")).ToArray();
             return JsonUtility.ToJson(new ToolListRes { tools = tools });
@@ -322,6 +338,30 @@ namespace VibeBridge {
             if (File.Exists(path)) try { _persistentNonce = JsonUtility.FromJson<SessionData>(File.ReadAllText(path)).sessionNonce; } catch { _persistentNonce = Guid.NewGuid().ToString().Substring(0, 8); }
             else _persistentNonce = Guid.NewGuid().ToString().Substring(0, 8);
         }
+        public static void LogMutation(string capability, string action, string details) {
+            if (!Directory.Exists("logs")) Directory.CreateDirectory("logs");
+            
+            var entry = new AuditEntry {
+                prevHash = _lastAuditHash,
+                timestamp = DateTime.UtcNow.ToString("o"),
+                capability = capability,
+                action = action,
+                details = details
+            };
+
+            string jsonWithoutHash = JsonUtility.ToJson(entry);
+            _lastAuditHash = ComputeHash(jsonWithoutHash);
+            entry.entryHash = _lastAuditHash;
+
+            File.AppendAllText("logs/vibe_audit.jsonl", JsonUtility.ToJson(entry) + "\n");
+        }
+
+        private static string ComputeHash(string input) {
+            using (var sha = System.Security.Cryptography.SHA256.Create()) {
+                byte[] bytes = sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(input));
+                return BitConverter.ToString(bytes).Replace("-", "").ToLower();
+            }
+        }
         private static void InitializeTelemetry() { Application.logMessageReceived += (msg, stack, type) => { if (type == LogType.Error || type == LogType.Exception) { _errors.Add(msg); if (_errors.Count > 50) _errors.RemoveAt(0); } }; }
         private static void SetStatus(string s) { try { File.WriteAllText("metadata/vibe_status.json", "{\"state\":\"" + s + "\",\"nonce\":\"" + _persistentNonce + "\"}"); } catch {} }
         private static float _lastHeartbeat = 0;
@@ -394,7 +434,7 @@ namespace VibeBridge {
         }
         private static void HandleHttpRequests() {
             lock (_httpQueue) {
-                if (_httpQueue.Count == 0) return;
+                if (_httpQueue.Count == 0 || _isVetoed) return;
                 
                 var stopwatch = System.Diagnostics.Stopwatch.StartNew();
                 try {
