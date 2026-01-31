@@ -1,5 +1,7 @@
 # 🌌 UnityVibeBridge
 
+**A Unity Editor extension that enables secure, deterministic AI-assisted scene creation and editing by constraining intent execution through a guarded control kernel.**
+
 > [!WARNING]
 > **EXPERIMENTAL & IN-DEVELOPMENT**  
 > This project is currently an active research prototype. APIs, security protocols, and core logic are subject to rapid, breaking changes. This software performs mutations on the Asset Database and Scene; **MANDATORY BACKUPS** are required before use.
@@ -18,27 +20,17 @@
 
 ---
 
-## ⚠️ Read This First (Why This Exists)
+## ⚡ What you can do in 5 minutes
 
-**UnityVibeBridge** is not a toy, a prompt wrapper, or a "magic AI button." 
-
-It is a **reference implementation of AI-assisted systems design** in a high-fidelity, stateful environment. It allows Large Language Models (LLMs) to safely operate inside Unity without risking project corruption, infinite import loops, or runaway execution.
-
-This project answers a critical engineering question: 
-> *How do you let an AI act inside a complex, stateful application—without trusting it?*
-
-**The answer is: You don’t. You constrain it.**
-
-| **Capability** | **Feature** |
-| :--- | :--- |
-| 🛡️ **Iron Box** | Zero-trust security via the **Kernel Guard**, Token-Auth, and AST-validated IPC. |
-| ⚛️ **Kernel Integrity** | Real-time invariant enforcement (No mutations during domain reloads, atomic transactions). |
-| 🏃 **Stable Lifecycle** | Time-budgeted main-loop dispatching (5ms slices) ensuring a smooth 60+ FPS. |
-| 🧠 **Epistemic Control** | Truth-reconciliation tools (`telemetry`, `vibe_status`) that prevent AI hallucinations. |
+1.  **Install**: Drag the `unity-package/` folder into your Unity project's `Assets/`.
+2.  **Initialize**: Wait for compilation. The Kernel starts automatically on port `8085`.
+3.  **Connect**: Point your AI agent (Claude Desktop, Goose, etc.) to the bridge using `scripts/python mcp-server/server.py`.
+4.  **Create**: Ask the AI: *"Spawn a red cube at the origin and name it 'TestCube'."*
+5.  **Audit**: Ask the AI: *"Run a mesh audit on my selected object and tell me the polycount."*
 
 ---
 
-## 🚀 Quick Start (Install in 60 Seconds)
+## 🚀 Quick Start (Detailed Installation)
 
 1.  **Install**: Copy the `unity-package/` directory into your project's `Assets/` folder.
 2.  **Initialize**: Wait for Unity to compile. The Kernel starts automatically on port `8085`.
@@ -66,26 +58,13 @@ The AI interacts with Unity via **Mechanistic Tools**. Below are typical request
 
 ---
 
-## 🧠 What This Project Demonstrates (Technical Audit)
-
-If you are evaluating this project as an engineer or hiring manager, this repository is a working demonstration of **AI Systems Engineering**:
-
-*   **Control-Plane vs. Execution-Plane Separation**: LLMs generate *intent* (Mechanistic Intents), never raw code execution.
-*   **Adversarial Security**: Hardened via local binding, session-token authentication, and **Recursive AST Auditing** of Python payloads.
-*   **Transactional State Mutation**: Every operation is wrapped in undo-safe, atomic blocks. **One AI request = One Undo step.**
-*   **Performance Budgeting**: Implements **5ms Main-Thread Time Budgeting** to ensure the Unity Editor maintains 60+ FPS even during heavy AI automation.
-*   **Truth Reconciliation Loop**: Tools like `get_telemetry_errors` force the agent to verify reality against intent in a closed feedback loop.
-
----
-
 ## 🛡️ Verifiable Security & Safety
 
 Unlike standard script-bridges, UnityVibeBridge treats the AI as an **untrusted operator**. 
 
-1.  **Pentest Suite**: We include a `security_tests/pentest_suite.py` that tests for 48 known attack vectors (Reflection, Shell-Injection, Path Traversal). 
-    *   **Current Rating**: **94% Success Rate** (45/48 vectors blocked).
-2.  **Forensic Ledger**: Every mutation is logged to an **immutable, cryptographically chained audit log** (`vibe_audit.jsonl`). Any attempt to tamper with history is immediately detectable.
-3.  **Human Kill-Switch**: The Kernel includes a mechanical `system/veto` tool that instantly locks the creation perimeter until manually re-armed by a human.
+1.  **Pentest Suite**: We include a `security_tests/pentest_suite.py` that tests for 48 known attack vectors.
+2.  **Forensic Ledger**: Every mutation is logged to an **immutable, cryptographically chained audit log** (`vibe_audit.jsonl`).
+3.  **Human Kill-Switch**: The Kernel includes a mechanical `system/veto` tool that instantly locks the creation perimeter.
 
 ---
 
@@ -125,15 +104,6 @@ Unlike standard script-bridges, UnityVibeBridge treats the AI as an **untrusted 
 
 ---
 
-## 🛡️ Iron Box Security
-The bridge is hardened via four distinct layers:
-1.  **AST Auditing**: All incoming tool calls are audited by `scripts/security_gate.py` for forbidden patterns.
-2.  **Token Authentication**: Port 8085 requires an `X-Vibe-Token` matching the current session.
-3.  **Iron Box Protocol**: Every mutation is wrapped in atomic `Undo` groups. **One AI Request = One Undo Step.**
-4.  **The Guard**: The bridge physically disables mutations if `vibe_status.json` is not "Ready".
-
----
-
 ## 🔰 FOR BEGINNERS
 
 New to AI development in Unity? Start here to understand the philosophy, safety mechanisms, and how to avoid common pitfalls like "AI Psychosis".
@@ -166,6 +136,7 @@ While our "Iron Box" security model is strict, it is designed to **empower** cre
 ---
 
 ## 🏛️ Project Doctrine & Architecture
+*   **[Vision & Philosophy](HUMAN_ONLY/VISION.md)**: Deep dive into the architectural goals and problem space.
 *   **[Technical Architecture](AI_CONTEXT.md)**: High-level overview of the Control-Plane vs. Execution-Plane.
 *   **[Non-Goals & Doctrine](NON_GOALS.md)**: The intentional limitations and philosophical guardrails of the project.
 *   **[Security Threat Acceptance](AI_SECURITY_THREAT_ACCEPTANCE.md)**: Formal definition of the boundary of responsibility and residual risks.
