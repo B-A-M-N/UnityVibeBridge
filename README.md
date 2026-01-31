@@ -13,10 +13,10 @@
 
 ## 🖼️ Previews
 
-| **Operational Proof (A)** | **Operational Proof (B)** |
+| | |
 | :---: | :---: |
-| ![UI Preview 1](captures/preview_ui_1.png) | ![Surgical Optimization Scan](captures/Screenshot%20from%202026-01-28%2023-51-24.png) |
-| ![Full Body Sweep](captures/full_body_sweep.png) | ![UI Preview 2](captures/preview_ui_2.png) |
+| ![Preview](captures/preview_ui_1.png) | ![Preview](captures/Screenshot%20from%202026-01-28%2023-51-24.png) |
+| ![Preview](captures/full_body_sweep.png) | ![Preview](captures/preview_ui_2.png) |
 
 ---
 
