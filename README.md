@@ -76,6 +76,14 @@ If you are evaluating this project as an engineer or hiring manager, this reposi
 
 ---
 
+## 🔰 FOR BEGINNERS
+
+New to AI development in Unity? Start here to understand the philosophy, safety mechanisms, and how to avoid common pitfalls like "AI Psychosis".
+
+👉 **[Read the Comprehensive Guide for Beginners](HUMAN_ONLY/FOR_BEGINNERS.md)**
+
+---
+
 ## 🛠️ Common AI Intents (Examples)
 
 The AI interacts with Unity via **Mechanistic Tools**. Below are typical requests the agent can execute autonomously once connected:
@@ -142,14 +150,6 @@ The bridge is hardened via four distinct layers:
 2.  **Token Authentication**: Port 8085 requires an `X-Vibe-Token` matching the current session.
 3.  **Iron Box Protocol**: Every mutation is wrapped in atomic `Undo` groups. **One AI Request = One Undo Step.**
 4.  **The Guard**: The bridge physically disables mutations if `vibe_status.json` is not "Ready".
-
----
-
-## 🔰 FOR BEGINNERS
-
-New to AI development in Unity? Start here to understand the philosophy, safety mechanisms, and how to avoid common pitfalls like "AI Psychosis".
-
-👉 **[Read the Comprehensive Guide for Beginners](HUMAN_ONLY/FOR_BEGINNERS.md)**
 
 ---
 
