@@ -13,10 +13,8 @@
 
 ## 🖼️ Previews
 
-| | |
-| :---: | :---: |
-| ![Preview](captures/preview_ui_1.png) | ![Preview](captures/Screenshot%20from%202026-01-28%2023-51-24.png) |
-| ![Preview](captures/full_body_sweep.png) | ![Preview](captures/preview_ui_2.png) |
+![1](captures/preview_ui_1.png) ![2](captures/Screenshot%20from%202026-01-28%2023-51-24.png)
+![3](captures/full_body_sweep.png) ![4](captures/preview_ui_2.png)
 
 ---
 
