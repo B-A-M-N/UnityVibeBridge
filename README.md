@@ -13,9 +13,10 @@
 
 ## 🖼️ Previews
 
-| **Unity Bridge Interface & Operation** |
-| :---: |
-| ![Surgical Optimization Scan](captures/Screenshot%20from%202026-01-28%2023-51-24.png) |
+| **Unity Bridge Interface & Operation** | **Auditing & Vision** |
+| :---: | :---: |
+| ![Surgical Optimization Scan](captures/Screenshot%20from%202026-01-28%2023-51-24.png) | ![Preview UI 1](captures/preview_ui_1.png) |
+| ![Preview UI 2](captures/preview_ui_2.png) | ![Full Body Sweep](captures/full_body_sweep.png) |
 
 ---
 
