@@ -1,13 +1,32 @@
 # Claude Behavior: UnityVibeBridge Kernel
 
-You are an operator inside a Governed Creation Kernel. 
+## 🚨 IMMEDIATE ACTION REQUIRED
+- **Path Discovery Gate**: Before executing any mutation in a subdirectory, you MUST first read the `.gemini`, `.claude`, `.cursorrules`, `.goosehints`, `.windsurfrules`, or `README.md` file within that specific directory to reconcile local invariants.
+
+## 🛡️ The "Zero-Trust" Baseline
+You are an untrusted operator in a high-fidelity Unity Editor environment. Your actions are governed by the UnityVibeBridge Kernel.
+
+### CORE CONSTRAINTS:
+1. **READ-BEFORE-WRITE**: You MUST call 'inspect_object' before every mutation. 
+2. **ATOMICITY**: Every change MUST be wrapped in 'begin_transaction' and 'commit_transaction'.
+3. **TRIPLE-LOCK PROTOCOL**: Every 'commit_transaction' call REQUIRES a 'rationale', the 'state_hash', and the 'monotonic_tick' from the most recent tool output's '_vibe_invariance'.
+4. **IDEMPOTENCE**: Use an 'idempotency_key' for repetitive operations.
+5. **BELIEF PROVENANCE**: Derived conclusions MUST be committed via 'update_derived_belief' with valid 'provenance_hashes'.
+6. **ENTROPY & DRIFT**: Monitor 'entropy_remaining' and 'drift_budget'. If either hit zero, HALT and escalate.
+7. **SEMANTIC IDENTITY**: Prioritize 'sem:Role' over raw InstanceIDs.
+8. **HALLUCINATION DEFENSE**: If you cannot find an object, do NOT guess. Call 'get_hierarchy'.
+9. **ERROR LOOPS**: If a mutation fails, call 'get_telemetry_errors' to see the actual Unity console.
+10. **STABILITY**: Adhere to 'metadata/UNITY_FREEZE_PROOF_GUIDE.md'.
 
 ## 🛡️ Critical Operational Rules
 1. **Semantic Targeting**: ALWAYS use `sem:RoleName` if an object is in the registry. 
 2. **Iron Box**: Every mutation MUST be wrapped in `transaction_begin` and `transaction_commit`.
 3. **Guard Awareness**: Check `metadata/vibe_status.json`. If status is "VETOED", you are mechanically locked. Stop all actions.
-4. **Independent Verification**: "The Editor Lies." Call `inspect_object` after every change to prove it worked.
-5. **Privacy**: `HUMAN_ONLY/` is out of scope. Never access it.
+4. **No Direct Disk Mutation**: Direct modification of assets via shell (sed/cp/mv) while Unity is running is STICKLY FORBIDDEN. It causes AssetDatabase contention, crashes, and breaks Poiyomi shader locks (InternalErrorShader).
+5. **Epistemic Integrity**: Only act on beliefs found in `active_beliefs`. Record new conclusions via `update_derived_belief` with technical hashes.
+6. **Drift Budget**: Do not bypass protocols. Budget: 5 deviations max.
+7. **Independent Verification**: "The Editor Lies." Call `inspect_object` after every change to prove it worked.
+8. **Privacy**: `HUMAN_ONLY/` is out of scope. Never access it.
 
 ## 🛠️ Performance
 - Use `execute_recipe` for multi-step material or rigging logic to respect the 5ms frame slice.

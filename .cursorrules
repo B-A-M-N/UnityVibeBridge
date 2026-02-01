@@ -1,25 +1,24 @@
 # Cursor Rules: UnityVibeBridge Kernel
 
-## 🏛️ Architectural Context
-- **Security Policy**: Bound by `AI_SECURITY_THREAT_ACCEPTANCE.md` and Kernel v1.2.1.
-- **The Kernel (`VibeBridgeKernel.cs`)**: The ONLY authorized mutation path. Irreducible and authenticated.
-- **The Gate**: Every file change is audited by `scripts/security_gate.py`.
+## 🏛️ Architectural Authority
+- **The Kernel**: `Assets/VibeBridge/` is the canonical source.
+- **Protocol**: Bound by `AI_ENGINEERING_CONSTRAINTS.md`.
 
-## 🛡️ Hard Bans (Mechanical Rejection)
-- **NO Direct Reflection**: Do not bypass the bridge via `System.Reflection`.
-- **NO Meta Editing**: Direct editing of `.meta` files is forbidden.
-- **NO Network/Shell**: No external network or process spawning from inside Unity.
+## 🛠️ Safe Tool Integration Checklist (CRITICAL)
+1. **Canonical Source**: ONLY mutate `Assets/VibeBridge/`.
+2. **Incrementalism**: Add only ONE method or payload at a time.
+3. **The 20-Second Rule**: MUST wait 20s for Unity to recompile after every `.cs` edit before calling a tool.
+4. **Syntax Pre-Flight**: Manually verify all braces `{}` and semicolons `;` before writing.
+5. **No Duplication**: Always `grep` for existing `VibeTool_` prefixes to prevent Ambiguous Match errors.
 
-## 🚀 AI Behavioral Mandates
-1. **Read-Before-Write**: You MUST call `inspect_object` before any mutation.
-2. **Resilient Targeting**: Prioritize **Semantic Pathing** (`sem:RoleName`) over InstanceIDs. Only use IDs for temporary session objects.
-3. **Stealth Workflow**: Use `select_object(path, frame=true)` ONLY when requested. Default to background selection.
-4. **Iron Box Protocol**: Every mutation MUST be wrapped in `begin_transaction` and `commit_transaction`.
-5. **Forensic Awareness**: Mutations are recorded in a cryptographically chained ledger. Ensure every action is technically justified.
-6. **Guard Awareness**: Check `metadata/vibe_status.json`. If it is "Ready", proceed. If "VETOED", HALT and ask the human to re-arm.
-7. **Time Budget**: Respect the 5ms frame slice. Use `execute_recipe` for multi-step logic to ensure atomicity.
-8. **Cynical Self-Audit**: Identify 3 failure points before destructive operations.
+## 🔐 Triple-Lock Protocol
+- **State Proof**: Acquisition of `state_hash` from `engine/error/state` is mandatory.
+- **Commit**: `transaction_commit` REQUIRES `rationale`, `state_hash`, and `monotonic_tick`.
 
-## 📁 File System Integrity
-- Write ONLY to `captures/`, `metadata/`, `logs/`, or `optimizations/`.
-- `HUMAN_ONLY/` is invisible. Never access or reference it.
+## 🛡️ Asset Database Safety
+- **NO DIRECT DISK MUTATION**: Never use shell commands on `.mat`, `.cs`, or `.meta` files while Unity is running.
+- **Bridge-Only**: All mutations MUST go through the `VibeBridgeServer` API.
+
+## 📦 Git Isolation
+- Snapshots go to `.git_safety`. Scene/Asset data NEVER goes to the main `.git` repo.
+- **Snapshot Cmd**: `git --git-dir=.git_safety --work-tree=. add . && git --git-dir=.git_safety --work-tree=. commit -m "[Snapshot Name]"`

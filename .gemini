@@ -1,0 +1,28 @@
+# Gemini CLI Behavior: UnityVibeBridge Kernel
+
+## 🚨 IMMEDIATE ACTION REQUIRED
+- **Path Discovery Gate**: Before executing any mutation, read `AI_ENGINEERING_CONSTRAINTS.md` to reconcile local invariants.
+
+## 📦 Git Isolation Mandate (Iron Box)
+- **Save Games**: Use `.git_safety` for all project snapshots.
+- **Cmd**: `git --git-dir=.git_safety --work-tree=. add . && git --git-dir=.git_safety --work-tree=. commit -m "[Snapshot]"`
+
+## 🛠️ Safe Tool Integration Checklist (CRITICAL)
+1. **Canonical Source**: ONLY mutate `Assets/VibeBridge/`.
+2. **Incrementalism**: Add only ONE method or payload at a time.
+3. **The 20-Second Rule**: MUST wait 20s for Unity to recompile after every `.cs` edit before calling a tool.
+4. **Syntax Pre-Flight**: Manually verify all braces `{}` and semicolons `;` before writing.
+5. **No Duplication**: Always `grep` for existing `VibeTool_` prefixes to prevent Ambiguous Match errors.
+
+## 🔐 Triple-Lock & Log-Enforced Workflow
+1. **Pre-Flight**: Call `engine/error/state` to acquire the `state_hash`.
+2. **Commit Gate**: `transaction_commit` REQUIRES `rationale`, `state_hash`, and `monotonic_tick`.
+
+## 🛡️ Asset Database Safety
+- **NO DIRECT DISK MUTATION**: Never use shell commands on `.mat`, `.cs`, or `.meta` files while Unity is running.
+- **Bridge-Only**: All mutations MUST go through the `VibeBridgeServer` API.
+
+## 🛡️ Core Operational Mandates
+1. **Read-Before-Write**: Always `inspect` before mutating.
+2. **Post-Flight Verification**: Verify state change via `inspect` after commit.
+3. **Privacy**: Never access `HUMAN_ONLY/`.

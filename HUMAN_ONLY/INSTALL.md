@@ -45,7 +45,22 @@ UnityVibeBridge operates as a **Split-Plane Kernel**:
 
 ---
 
-## 🧠 3. Advanced Epistemic Governance
+## 📦 3. Git Infrastructure & Forensic Auditing
+
+### A. Git LFS (Large File Support)
+Unity projects are binary-heavy. We mandate Git LFS to maintain stable state hashes:
+1.  **Initialize**: `git lfs install`
+2.  **Track Assets**: The project includes a pre-configured `.gitattributes` file that tracks `.fbx`, `.png`, `.mat`, and `.prefab` files.
+3.  **Verify**: Run `git lfs ls-files` to ensure high-scale assets are offloaded.
+
+### B. Forensic Git Logging (Secondary Ledger)
+Every AI mutation is logged to `logs/vibe_audit.jsonl`. For production-grade immutability, we recommend tracking this folder in Git:
+1.  **Whitelist Logs**: Ensure `!logs/vibe_audit.jsonl` is in your `.gitignore` (Default in v1.5).
+2.  **Commit Frequency**: Configure a local hook or manual process to commit the audit log after every major session. This creates a permanent, non-repudiable history of AI actions.
+
+---
+
+## 🧠 4. Advanced Epistemic Governance
 
 To prevent "AI Psychosis" at an engineering level, the bridge implements **Truth Reconciliation Loops**.
 

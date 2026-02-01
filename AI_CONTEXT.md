@@ -1,3 +1,5 @@
+REFERENCE: Assets/VibeBridge/SERVER_FLOW.md
+
 # UnityVibeBridge: The Governed Creation Kernel
 
 ## 🏛️ Technical Architecture
@@ -8,28 +10,30 @@ UnityVibeBridge transforms the Unity Editor into a deterministic Control Plane. 
 ```mermaid
 graph LR
     A[AI Agent] <-->|MCP Stdio/SSE| B[MCP Server]
-    B <-->|Airlock JSON Queue| C[Unity Kernel]
+    B <-->|Airlock JSON/Binary Queue| C[Unity Kernel]
     C -->|Express HTTP| B
 ```
 
 1.  **AI Agent (Director)**: Issues high-level intents via MCP tool calls.
 2.  **MCP Server (Translator)**: Python server that translates agent calls into Unity requests.
-3.  **Unity Editor (Rigger)**: `VibeBridgeKernel.cs` executes operations using `Undo` and Reflection.
+3.  **Unity Editor (Rigger)**: `VibeBridgeKernel.cs` executes operations using `Undo`, `UniTask` (Async), and `MemoryPack` (No-Reflection).
 
 ### The "Director" Workflow
 Agents must follow a strict execution lifecycle to ensure state integrity:
 1. **Discover**: `get_hierarchy` / `search_objects` -> Build scene map.
 2. **Verify**: `inspect_object` -> Prove assumptions about components.
-3. **Protect**: `begin_transaction` -> Create an undo safety net.
-4. **Execute**: `rename` / `set_value` / `clone` -> Perform the mutation.
+3. **Protect**: `begin_transaction` -> Create an undo safety net and record current Git HEAD.
+4. **Execute**: `rename` / `set_value` / `clone` -> Perform the mutation via hardened Async tools.
 5. **Observe**: Check `_vibe_warning` in the response for project errors.
-6. **Finalize**: `commit_transaction`.
+6. **Finalize**: `commit_transaction` (Requires Rationale, State Hash, Tick, and Git Hash).
 
 ### Core Safety Layers
 1. **The Kernel Guard**: Mechanically blocks mutations during **Compilation**, **Play Mode**, or **Asset Import**. Check `metadata/vibe_status.json` before any mutation.
 2. **Iron Box Protocol**: Every mutation MUST be wrapped in `begin_transaction` and `commit_transaction`. All AI actions are single, clean Undo steps in Unity.
-3. **Time-Budgeted IPC**: Requests are processed in 5ms slices to maintain 60+ FPS in the Unity Editor.
-4. **Token Security**: All mutations are authenticated via `X-Vibe-Token`.
+3. **Hardened Core (AsyncUtils/SerializationUtils)**: All IPC uses `UniTask` for non-blocking execution and `MemoryPack` for secure, zero-reflection serialization.
+4. **No Direct Disk Mutation**: Direct modification of asset files (`.mat`, `.cs`, `.meta`, `.prefab`) via shell commands (`sed`, `cp`, `mv`, `rm`) while Unity is running is **STRICTLY FORBIDDEN**. This prevents AssetDatabase race conditions and protects the **Snapshot Invariance** of the session.
+5. **Snapshot Invariance**: Every mutation is bracketed by a Git checkpoint. The tool execution fails if the project state has drifted from the recorded Git hash, ensuring temporal integrity.
+6. **Token Security**: All mutations are authenticated via `X-Vibe-Token`. This is the primary defense against unauthorized local network execution.
 
 ---
 
@@ -39,9 +43,12 @@ Agents must follow a strict execution lifecycle to ensure state integrity:
 *   **`inspect_object`**: Returns detailed components, tags, and transform state.
 *   **`get_telemetry_errors`**: Streams last 50 console errors for truth reconciliation.
 *   **`list_available_tools`**: Dynamic discovery of Payload capabilities.
+*   **`check_heartbeat`**: Verifies if the Unity Kernel is responsive via local file check.
 
 ### 2. 🛡️ Kernel & Integrity
 *   **`transaction_begin` / `commit` / `abort`**: Atomic Undo-Group management.
+*   **`bootstrap_vibe_bridge`**: One-click injection of the Kernel and Payloads into a new project.
+*   **`run_vibe_check`**: Pre-flight audit of the project infrastructure.
 *   **`system/execute-recipe`**: Atomic multi-tool batch execution.
 *   **`system/veto` / `unveto`**: Mechanical human kill-switch (Emergency Stop).
 *   **guard/status**: Checks for unsafe states (Compiling, Playing).
@@ -115,6 +122,7 @@ Every code modification and shell command is audited by `scripts/security_gate.p
 ## 📘 Further Reading
 - For instructions on how to manage AI behavior and prevent hallucinations, see [FOR_BEGINNERS.md](FOR_BEGINNERS.md).
 - For strict engineering rules, see [AI_ENGINEERING_CONSTRAINTS.md](AI_ENGINEERING_CONSTRAINTS.md).
+- To prevent Unity Editor freezes and main-thread hangs, see [metadata/UNITY_FREEZE_PROOF_GUIDE.md](metadata/UNITY_FREEZE_PROOF_GUIDE.md).
 
 ---
 **Copyright (C) 2026 B-A-M-N**

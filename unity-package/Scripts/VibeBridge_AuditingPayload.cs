@@ -16,7 +16,7 @@ namespace VibeBridge {
     public static partial class VibeBridgeServer {
         
         public static string VibeTool_audit_avatar(Dictionary<string, string> q) {
-            GameObject root = Resolve(q["path"]);
+            GameObject root = VibeBridgeServer.ResolveAssetPath(q["path"]) != null ? Resolve(q["path"]) : null;
             if (root == null) return JsonUtility.ToJson(new BasicRes { error = "Root not found" });
             var renderers = root.GetComponentsInChildren<Renderer>(true);
             var results = renderers.Select(r => {

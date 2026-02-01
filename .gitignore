@@ -48,6 +48,8 @@ captures/*.jpg
 
 # Logs
 logs/
+!logs/vibe_audit.jsonl
+!logs/vibe_kernel.log
 *.log
 
 # Submodules/External
@@ -63,3 +65,4 @@ personal_tools/
 # Hide sensitive human documentation from AI context
 
 # Sanctuary
+.git_safety/

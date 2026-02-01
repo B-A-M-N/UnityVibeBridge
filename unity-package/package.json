@@ -7,5 +7,9 @@
   "author": {
     "name": "Vibe Coding Team"
   },
-  "dependencies": {}
+  "dependencies": {
+    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
+    "com.cysharp.memorypack": "https://github.com/Cysharp/MemoryPack.git?path=src/MemoryPack.Unity/Assets/Plugins/MemoryPack",
+    "com.unity.editorcoroutines": "1.0.0"
+  }
 }

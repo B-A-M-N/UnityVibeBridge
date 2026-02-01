@@ -1,7 +1,11 @@
 {
     "name": "VibeBridge",
     "rootNamespace": "VibeBridge",
-    "references": [],
+    "references": [
+        "UniTask",
+        "MemoryPack",
+        "Unity.EditorCoroutines.Editor"
+    ],
     "includePlatforms": [
         "Editor"
     ],

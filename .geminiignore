@@ -7,7 +7,6 @@ HUMAN_ONLY/
 vibe_queue/
 metadata/
 !metadata/vibe_settings.json
-logs/
 captures/
 
 # Infrastructure Protection (Prevent AI tampering/analysis)
@@ -23,3 +22,4 @@ alcom-tools/
 venv/
 __pycache__/
 
+.git_safety/

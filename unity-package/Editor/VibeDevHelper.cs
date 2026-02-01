@@ -37,6 +37,47 @@ namespace VibeBridge {
             // We can add logic here to send an unlock command if we want
             Debug.Log("[VibeBridge] Manual Unlock Requested via Editor Menu.");
         }
+
+        // --- SELECTION TOOLS ---
+
+        [MenuItem("VibeBridge/Selection/Copy Selected ID %#i")] // Ctrl/Cmd + Shift + I
+        public static void CopySelectedID() {
+            GameObject go = Selection.activeGameObject;
+            if (go == null) { Debug.LogWarning("[Vibe] Nothing selected."); return; }
+            GUIUtility.systemCopyBuffer = go.GetInstanceID().ToString();
+            Debug.Log($"[Vibe] Copied ID to clipboard: {go.GetInstanceID()} ({go.name})");
+        }
+
+        [MenuItem("VibeBridge/Selection/Copy Selected Path %#p")] // Ctrl/Cmd + Shift + P
+        public static void CopySelectedPath() {
+            GameObject go = Selection.activeGameObject;
+            if (go == null) { Debug.LogWarning("[Vibe] Nothing selected."); return; }
+            
+            string path = AssetDatabase.GetAssetPath(go);
+            if (string.IsNullOrEmpty(path)) {
+                // Scene Object: Build hierarchy path
+                path = go.name;
+                Transform t = go.transform;
+                while (t.parent != null) {
+                    t = t.parent;
+                    path = t.name + "/" + path;
+                }
+            }
+            
+            GUIUtility.systemCopyBuffer = path;
+            Debug.Log($"[Vibe] Copied Path to clipboard: {path}");
+        }
+
+        [MenuItem("VibeBridge/Selection/Log Details")]
+        public static void LogSelectionDetails() {
+            GameObject go = Selection.activeGameObject;
+            if (go == null) { Debug.LogWarning("[Vibe] Nothing selected."); return; }
+            
+            string info = $"<b>{go.name}</b>\nID: {go.GetInstanceID()}\nLayer: {LayerMask.LayerToName(go.layer)} ({go.layer})\nTag: {go.tag}\n";
+            info += $"Static: {GameObjectUtility.GetStaticEditorFlags(go)}\n";
+            info += $"Components: {string.Join(", ", System.Linq.Enumerable.Select(go.GetComponents<Component>(), c => c != null ? c.GetType().Name : "<Missing Script>"))}";
+            Debug.Log($"[Vibe] Selection Details:\n{info}");
+        }
     }
 }
 #endif

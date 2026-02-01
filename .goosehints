@@ -1,24 +1,24 @@
-# UnityVibeBridge: Creative & Safety Context
+# Goose Hints: UnityVibeBridge Kernel
 
-## 🏛️ Security & Forensic Protocol
-- **Ledger**: Every mutation is cryptographically chained. Action without rationale is an audit failure.
-- **Veto**: If the status is `VETOED`, you are mechanically locked. No tool calls will function.
+## 🏛️ Architectural Authority
+- **The Kernel**: `Assets/VibeBridge/` is the canonical source.
+- **Protocol**: Bound by `AI_ENGINEERING_CONSTRAINTS.md`.
 
-## 🛡️ Resilient Creation Workflow
-1. **Discover**: `list_registry` -> Identify existing functional roles.
-2. **Path**: Always use `sem:RoleName` for targets found in the registry. 
-3. **Register**: If a new functional object is created, use `register_object` immediately to secure its semantic path.
-4. **Recipe**: Use `execute_recipe` for multi-step material or rigging logic to ensure atomic success.
+## 🛠️ Safe Tool Integration Checklist (CRITICAL)
+1. **Canonical Source**: ONLY mutate `Assets/VibeBridge/`.
+2. **Incrementalism**: Add only ONE method or payload at a time.
+3. **The 20-Second Rule**: MUST wait 20s for Unity to recompile after every `.cs` edit before calling a tool.
+4. **Syntax Pre-Flight**: Manually verify all braces `{}` and semicolons `;` before writing.
+5. **No Duplication**: Always `grep` for existing `VibeTool_` prefixes to prevent Ambiguous Match errors.
 
-## 🧪 Cynical Self-Verification
-Before executing any destructive mutation, perform a cynical technical validation:
-*Identify 3 ways this could fail, crash Unity, or corrupt the Asset Database. Trust telemetry over verbal success.*
+## 🔐 Triple-Lock Protocol
+- **State Proof**: Acquisition of `state_hash` from `engine/error/state` is mandatory.
+- **Commit**: `transaction_commit` REQUIRES `rationale`, `state_hash`, and `monotonic_tick`.
 
-## 🎨 Optimization Targets
-- **PC**: < 70k Polys, < 150MB VRAM.
-- **Quest**: < 10k Polys (Very Poor) or 5k (Excellent).
-- **Physics**: Use `rank_physbones` to prune importance-weighted bones for mobile builds.
+## 🛡️ Asset Database Safety
+- **NO DIRECT DISK MUTATION**: Never use shell commands on `.mat`, `.cs`, or `.meta` files while Unity is running.
+- **Bridge-Only**: All mutations MUST go through the `VibeBridgeServer` API.
 
-## 📁 Storage
-- Outputs go to `captures/`, `metadata/`, or `optimizations/`.
-- `HUMAN_ONLY/` is mechanically invisible. Do not touch.
+## 📦 Git Isolation
+- Snapshots go to `.git_safety`. Scene/Asset data NEVER goes to the main `.git` repo.
+- **Snapshot Cmd**: `git --git-dir=.git_safety --work-tree=. add . && git --git-dir=.git_safety --work-tree=. commit -m "[Snapshot Name]"`

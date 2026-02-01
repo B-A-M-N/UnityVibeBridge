@@ -11,9 +11,29 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using VibeBridge.Core;
+using Cysharp.Threading.Tasks;
 
 namespace VibeBridge {
     public static partial class VibeBridgeServer {
+
+        public static async UniTask<string> ExecuteVrcTool(string toolName, Dictionary<string, string> q) {
+            if (!Enum.TryParse(toolName.Replace("VibeTool_vrc_", ""), true, out ToolID toolID)) {
+                return JsonUtility.ToJson(new BasicRes { error = $"Unknown vrc tool: {toolName}" });
+            }
+
+            try {
+                await AsyncUtils.SwitchToMainThreadSafe();
+            } catch (Exception e) {
+                return JsonUtility.ToJson(new BasicRes { error = $"Concurrency Failure: {e.Message}" });
+            }
+
+            return toolName switch {
+                "VibeTool_vrc_menu_add" => VibeTool_vrc_menu_add(q),
+                "VibeTool_vrc_params_add" => VibeTool_vrc_params_add(q),
+                _ => JsonUtility.ToJson(new BasicRes { error = "Tool not mapped." })
+            };
+        }
         
         public static string VibeTool_vrc_menu_add(Dictionary<string, string> q) {
             UnityEngine.Object asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(q["path"]);

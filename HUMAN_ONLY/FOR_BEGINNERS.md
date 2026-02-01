@@ -166,7 +166,40 @@ Reasoning with AI is **less about commanding it perfectly** and more about **str
 
 ---
 
-## 11. Bottom Line
+## 12. The "Triple-Lock" Safety (What are those Hashes?)
+
+If you watch the AI work, you might see it talking about "Hashes," "WALs," or "Monotonic Ticks." These sound like computer-science jargon, but they are actually your safety net.
+
+*   **The State Hash**: This is a digital "fingerprint" of your project. Before the AI commits a change, it must prove its current fingerprint matches Unity's. If you move an object manually while the AI is thinking, the fingerprints won't match, and the AI will **stop** rather than break your scene.
+*   **The Monotonic Tick**: This is a heartbeat counter. It prevents the AI from acting on "old news." If Unity pauses or recompiles, the tick changes, and the AI's old instructions become invalid instantly.
+*   **The Rationale**: The AI is physically locked out of making changes unless it provides a **technical reason** for the mutation. This forces the AI to "think twice" before touching your project.
+*   **The Git Hash**: A unique code that represents exactly how your files look right now. The AI uses this to make sure it's not editing a version of your project that doesn't exist anymore.
+
+---
+
+## 13. Working with AI Specialists (Mental Sandboxes)
+
+In high-scale projects, you might work with multiple AI "Specialists" instead of one general AI. This keeps your project stable by preventing "Engine Confusion."
+
+*   **The Unity Specialist**: Only knows about Unity. It doesn't know what Blender is. It focuses entirely on your materials, components, and scene.
+*   **The Blender Specialist**: Only knows about 3D modeling. It focuses on vertices and bones.
+*   **The Coordinator**: The "Brain" that manages the specialists. It makes sure the Blender changes and Unity changes stay synchronized using **UUIDs** (unique ID tags).
+
+**Why this helps you:** If the Unity AI tries to give you a Blender instruction, the system will mechanically reject it. This "Air Gap" prevents the AI from getting its wires crossed and breaking your rig.
+
+---
+
+## 14. Using Git to Stay Safe (Artist's Audit Trail)
+
+We use a tool called **Git** to keep a record of your work. Even if you aren't a programmer, you should know how it protects you:
+
+1.  **The Time Machine**: Git allows you to "Save" a snapshot of your project. If the AI makes a mess, you can revert to exactly how the project looked 5 minutes ago.
+2.  **The Forensic Log**: Every action the AI takes is recorded in a special file (`logs/vibe_audit.jsonl`). We recommend setting up Git to track this file. This creates an **immutable ledger**—a record that cannot be changed—of exactly what the AI did and why.
+3.  **LFS (Large File Support)**: Your big 3D models and textures are protected by a special Git system (LFS) that ensures they don't bloat your computer but still stay synchronized with the AI's "State Hash."
+
+---
+
+## 15. Bottom Line
 
 AI is a **co-pilot**, not a pilot.
 
@@ -211,10 +244,27 @@ Take a moment to confirm all of these before continuing.
 
 ---
 
-## Step 2: Install UnityVibeBridge
+## Step 2: Install UnityVibeBridge Dependencies
+
+UnityVibeBridge uses some advanced "helper" packages to keep the AI from freezing your screen. We need to install these first.
+
+1. Open **Command Prompt** (Windows) or **Terminal** (Mac/Linux).
+2. Type `python`, then a space, then drag the `scripts/setup_unity_deps.py` file from the bridge folder into the window. It should look something like this:
+   ```bash
+   python C:\Users\YourName\Downloads\UnityVibeBridge\scripts\setup_unity_deps.py
+   ```
+3. Press **Enter**. 
+4. The script will automatically add **UniTask** and **MemoryPack** to your project.
+5. Go back to Unity and wait for the progress bar in the bottom right to finish.
+
+✅ **Check:** If the script says "Success!", your project is now ready for the bridge.
+
+---
+
+## Step 3: Install UnityVibeBridge
 
 1. Open the folder containing **UnityVibeBridge** on your computer.
-2. Inside, you should see a folder called `unity-package` (or something similar).
+2. Inside, you should see a folder called `unity-package`.
 3. Open `unity-package`. You should see:
    * `Editor` folder
    * `Scripts` folder
@@ -227,9 +277,9 @@ Take a moment to confirm all of these before continuing.
 
 ---
 
-## Step 3: Install or Check Python
+## Step 4: Install or Check Python
 
-UnityVibeBridge requires Python to run the MCP server. If you already installed Python, skip to Step 4.
+UnityVibeBridge requires Python to run the MCP server. If you already installed Python, skip to Step 5.
 
 1. Open [Python download page](https://www.python.org/downloads/) and install Python 3.10 or higher.
 2. During installation, **check the box “Add Python to PATH”**. This allows your computer to run Python commands from anywhere.
@@ -240,11 +290,11 @@ UnityVibeBridge requires Python to run the MCP server. If you already installed 
 
 ---
 
-## Step 4: Connect the AI to the Bridge
+## Step 5: Connect the AI to the Bridge
 
 Your AI needs to talk to UnityVibeBridge using Python.
 
-1. Open your AI tool. Find **Settings** or **Preferences**.
+1. Open your AI tool (Claude Desktop, Goose, etc). Find **Settings** or **Preferences**.
 2. Look for something like **“MCP Servers”**, **“Extensions”**, or **“External Tools”**.
 3. Add a new server or extension. Enter:
    * **Command:** `python`
@@ -256,7 +306,7 @@ Your AI needs to talk to UnityVibeBridge using Python.
 
 ---
 
-## Step 5: Test the Connection (The Handshake)
+## Step 6: Test the Connection (The Handshake)
 
 Before doing anything complicated, check if the AI and Unity can talk to each other.
 

@@ -11,19 +11,40 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using VibeBridge.Core;
+using Cysharp.Threading.Tasks;
+using MemoryPack;
 
 namespace VibeBridge {
-    [Serializable] public class RegistryData { public List<RegistryEntry> entries = new List<RegistryEntry>(); }
-    [Serializable] public class RegistryEntry { 
+    [MemoryPackable] [Serializable] public partial class RegistryData { public List<RegistryEntry> entries = new List<RegistryEntry>(); }
+    [MemoryPackable] [Serializable] public partial class RegistryEntry { 
         public string uuid, role, group; 
-        public int lastKnownID; 
+        public int lastKnownID, slotIndex; 
         public Fingerprint fingerprint; 
     }
-    [Serializable] public class Fingerprint { public string meshName; public int triangles, vertices; public string[] components; }
+    [MemoryPackable] [Serializable] public partial class Fingerprint { public string meshName; public int triangles, vertices; public string[] components; }
 
     public static partial class VibeBridgeServer {
         private static RegistryData _registry = new RegistryData();
         private const string REGISTRY_PATH = "metadata/vibe_registry.json";
+
+        public static async UniTask<string> ExecuteRegistryTool(string toolName, Dictionary<string, string> q) {
+            if (!Enum.TryParse(toolName.Replace("VibeTool_registry_", ""), true, out ToolID toolID)) {
+                return JsonUtility.ToJson(new BasicRes { error = $"Unknown registry tool: {toolName}" });
+            }
+
+            try {
+                await AsyncUtils.SwitchToMainThreadSafe();
+            } catch (Exception e) {
+                return JsonUtility.ToJson(new BasicRes { error = $"Concurrency Failure: {e.Message}" });
+            }
+
+            return toolName switch {
+                "VibeTool_registry_add" => VibeTool_registry_add(q),
+                "VibeTool_registry_list" => VibeTool_registry_list(q),
+                _ => JsonUtility.ToJson(new BasicRes { error = "Tool not mapped." })
+            };
+        }
 
         public static string VibeTool_registry_add(Dictionary<string, string> q) {
             GameObject go = Resolve(q["path"]);
@@ -38,6 +59,7 @@ namespace VibeBridge {
                 uuid = q.ContainsKey("uuid") ? q["uuid"] : Guid.NewGuid().ToString().Substring(0, 8),
                 role = q["role"], group = q.ContainsKey("group") ? q["group"] : "default",
                 lastKnownID = go.GetInstanceID(),
+                slotIndex = q.ContainsKey("slotIndex") ? int.Parse(q["slotIndex"]) : 0,
                 fingerprint = new Fingerprint {
                     meshName = m.name, triangles = m.triangles.Length / 3, vertices = m.vertexCount,
                     components = go.GetComponents<Component>().Where(c => c != null).Select(c => c.GetType().Name).ToArray()

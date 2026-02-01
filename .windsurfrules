@@ -1,8 +1,24 @@
-# Windsurf Behavior: UnityVibeBridge Kernel
+# Windsurf Rules: UnityVibeBridge Kernel
 
-## 🏛️ Kernel v1.2.1 Mandates
-- **Zero-Trust**: Read-Before-Write (`inspect_object`) is mandatory.
-- **Resiliency**: Use `sem:` prefix for all functional lookups.
-- **Forensics**: Your mutations are cryptographically chained. Provide clear rationale for every action.
-- **Performance**: Batch commands via `execute_recipe` to maintain 60+ FPS Unity responsiveness.
-- **Kill-Switch**: Respect the Human Veto in `vibe_status.json`.
+## 🏛️ Architectural Authority
+- **The Kernel**: `Assets/VibeBridge/` is the canonical source.
+- **Protocol**: Bound by `AI_ENGINEERING_CONSTRAINTS.md`.
+
+## 🛠️ Safe Tool Integration Checklist (CRITICAL)
+1. **Canonical Source**: ONLY mutate `Assets/VibeBridge/`.
+2. **Incrementalism**: Add only ONE method or payload at a time.
+3. **The 20-Second Rule**: MUST wait 20s for Unity to recompile after every `.cs` edit before calling a tool.
+4. **Syntax Pre-Flight**: Manually verify all braces `{}` and semicolons `;` before writing.
+5. **No Duplication**: Always `grep` for existing `VibeTool_` prefixes to prevent Ambiguous Match errors.
+
+## 🔐 Triple-Lock Protocol
+- **State Proof**: Acquisition of `state_hash` from `engine/error/state` is mandatory.
+- **Commit**: `transaction_commit` REQUIRES `rationale`, `state_hash`, and `monotonic_tick`.
+
+## 🛡️ Asset Database Safety
+- **NO DIRECT DISK MUTATION**: Never use shell commands on `.mat`, `.cs`, or `.meta` files while Unity is running.
+- **Bridge-Only**: All mutations MUST go through the `VibeBridgeServer` API.
+
+## 📦 Git Isolation
+- Snapshots go to `.git_safety`. Scene/Asset data NEVER goes to the main `.git` repo.
+- **Snapshot Cmd**: `git --git-dir=.git_safety --work-tree=. add . && git --git-dir=.git_safety --work-tree=. commit -m "[Snapshot Name]"`

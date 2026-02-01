@@ -1,0 +1,29 @@
+import os
+import json
+import time
+
+project_path = "/home/bamn/ALCOM/Projects/BAMN-EXTO"
+inbox = os.path.join(project_path, "vibe_queue/inbox")
+outbox = os.path.join(project_path, "vibe_queue/outbox")
+
+def send_and_receive(cmd, filename):
+    with open(os.path.join(inbox, filename + ".json"), 'w') as f:
+        json.dump(cmd, f)
+    for _ in range(60): # Give it more time for baking
+        time.sleep(1.0)
+        res_file = os.path.join(outbox, "res_" + filename + ".json")
+        if os.path.exists(res_file):
+            with open(res_file, 'r') as f:
+                return json.load(f)
+    return None
+
+# Trigger bake for Body and Bodysuit
+# We can just target the top-level objects
+targets = ["28866", "28830"]
+
+for tid in targets:
+    print(f"Triggering Poiyomi Lock/Bake for target: {tid}...")
+    cmd = {"action":"material/poiyomi/lock","capability":"write","keys":["path"],"values":[tid]}
+    res = send_and_receive(cmd, f"bake_{tid}")
+    print(f"  Result: {json.dumps(res, indent=2) if res else 'Timeout'}")
+
