@@ -62,11 +62,7 @@ namespace UnityVibeBridge.Kernel {
             });
         }
 
-        [VibeTool("hierarchy", "Returns a flat list of all GameObjects in the active scene.")]
-        public static string VibeTool_hierarchy(Dictionary<string, string> q) {
-            var all = UnityEngine.Object.FindObjectsOfType<GameObject>();
-            return JsonUtility.ToJson(new HierarchyRes { objects = all.Select(o => new HierarchyRes.ObjectNode { name = o.name, id = o.GetInstanceID() }).ToArray() });
-        }
+
 
         public static class ShaderUtils {
             private static readonly string[] _fallbackDragnet = { "VRChat/Mobile/Toon Lit", "Universal Render Pipeline/Simple Lit", "Universal Render Pipeline/Lit", "Mobile/Diffuse", "Standard" };
