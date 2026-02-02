@@ -285,7 +285,8 @@ namespace UnityVibeBridge.Kernel {
             if (EditorApplication.isCompiling) return "COMPILING";
             if (EditorApplication.isUpdating) return "UPDATING";
             if (EditorApplication.isPlayingOrWillChangePlaymode) return "PLAYMODE_TRANSITION";
-            if (AssetDatabase.IsImportingAssets()) return "IMPORTING";
+            // AssetDatabase.IsImportingAssets() is 2021+, isUpdating covers it in 2019
+            if (EditorApplication.isUpdating) return "IMPORTING";
             return "Ready";
         }
 
@@ -301,7 +302,7 @@ namespace UnityVibeBridge.Kernel {
             if (EditorApplication.isCompiling) return false;
             if (EditorApplication.isUpdating) return false;
             if (EditorApplication.isPlayingOrWillChangePlaymode) return false;
-            if (AssetDatabase.IsImportingAssets()) return false;
+            // 2019.4 Compat: isUpdating covers import state
             return true;
         }
 
