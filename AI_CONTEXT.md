@@ -14,11 +14,11 @@ graph LR
     C -->|Express HTTP| B
 ```
 
-1.  **AI Agent (Director)**: Issues high-level intents via MCP tool calls.
+1.  **AI Agent**: Issues high-level intents via MCP tool calls.
 2.  **MCP Server (Translator)**: Python server that translates agent calls into Unity requests.
 3.  **Unity Editor (Rigger)**: `VibeBridgeKernel.cs` executes operations using `Undo`, `UniTask` (Async), and `MemoryPack` (No-Reflection).
 
-### The "Director" Workflow
+### The AI Workflow
 Agents must follow a strict execution lifecycle to ensure state integrity:
 1. **Discover**: `get_hierarchy` / `search_objects` -> Build scene map.
 2. **Verify**: `inspect_object` -> Prove assumptions about components.

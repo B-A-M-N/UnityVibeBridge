@@ -1,16 +1,3 @@
-// UnityVibeBridge: The Governed Creation Kernel for Unity
-// Copyright (C) 2026 B-A-M-N
-//
-// This software is dual-licensed under the GNU AGPLv3 and a 
-// Commercial "Work-or-Pay" Maintenance Agreement.
-//
-// You may use this file under the terms of the AGPLv3, provided 
-// you meet all requirements (including source disclosure).
-//
-// For commercial use, or to keep your modifications private, 
-// you must satisfy the requirements of the Commercial Path 
-// as defined in the LICENSE file at the project root.
-
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
@@ -18,79 +5,73 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace VibeBridge {
-    public static partial class VibeBridgeServer { 
-        
-        // --- VISUAL EXTRAS ---
+namespace UnityVibeBridge.Kernel {
+    public static partial class VibeBridgeServer {
+
+        [VibeTool("opt/fork", "Duplicates an object and disables the original for non-destructive experimentation.", "path")]
+        public static string VibeTool_opt_fork(Dictionary<string, string> q) {
+            GameObject original = Resolve(q["path"]);
+            if (original == null) return JsonUtility.ToJson(new BasicRes { error = "Not found" });
+
+            GameObject fork = UnityEngine.Object.Instantiate(original, original.transform.parent);
+            fork.name = "Fork_" + original.name;
+            fork.transform.localPosition = original.transform.localPosition;
+            fork.transform.localRotation = original.transform.localRotation;
+            fork.transform.localScale = original.transform.localScale;
+
+            Undo.RegisterCreatedObjectUndo(fork, "Fork Object");
+            Undo.RecordObject(original, "Disable Original");
+            original.SetActive(false);
+
+            return JsonUtility.ToJson(new BasicRes { message = "Forked", id = fork.GetInstanceID() });
+        }
+
+        [VibeTool("visual/point", "Spawns a debug sphere at a coordinate for visual confirmation.", "pos", "color")]
         public static string VibeTool_visual_point(Dictionary<string, string> q) {
-            Vector3 pos = ResolvePosition(q);
-            GameObject pointer = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            pointer.name = "[VIBE_POINT] " + (q.ContainsKey("label") ? q["label"] : "Attention");
-            pointer.transform.position = pos;
-            pointer.transform.localScale = Vector3.one * 0.2f;
-            pointer.tag = "EditorOnly";
-            var r = pointer.GetComponent<Renderer>();
-            if (r) { 
-                r.sharedMaterial = new Material(Shader.Find("Hidden/Internal-Colored")); 
-                r.sharedMaterial.color = Color.red; 
+            var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            go.name = "VibeDebug_Point";
+            if (q.ContainsKey("pos")) {
+                var p = q["pos"].Split(',').Select(float.Parse).ToArray();
+                go.transform.position = new Vector3(p[0], p[1], p[2]);
             }
-            Undo.RegisterCreatedObjectUndo(pointer, "Spawn Visual");
-            return JsonUtility.ToJson(new BasicRes { message = "Pointer spawned", id = pointer.GetInstanceID() });
+            go.transform.localScale = Vector3.one * 0.05f;
+            var r = go.GetComponent<Renderer>();
+            r.material = new Material(Shader.Find("Hidden/Internal-Colored"));
+            if (q.ContainsKey("color")) {
+                var c = q["color"].Split(',').Select(float.Parse).ToArray();
+                r.material.color = new Color(c[0], c[1], c[2]);
+            }
+            Undo.RegisterCreatedObjectUndo(go, "Spawn Debug Point");
+            return JsonUtility.ToJson(new BasicRes { message = "Point spawned", id = go.GetInstanceID() });
         }
 
+        [VibeTool("visual/line", "Draws a debug line between two coordinates.", "start", "end", "color")]
         public static string VibeTool_visual_line(Dictionary<string, string> q) {
-            Vector3 start = ResolvePosition(q, "start");
-            Vector3 end = ResolvePosition(q, "end");
-            GameObject lineObj = new GameObject("[VIBE_LINE]");
-            lineObj.tag = "EditorOnly";
-            var lr = lineObj.AddComponent<LineRenderer>();
-            lr.useWorldSpace = true;
-            lr.startWidth = 0.05f; lr.endWidth = 0.05f;
-            lr.positionCount = 2;
-            lr.SetPosition(0, start); lr.SetPosition(1, end);
-            lr.sharedMaterial = new Material(Shader.Find("Hidden/Internal-Colored"));
-            lr.sharedMaterial.color = Color.yellow;
-            Undo.RegisterCreatedObjectUndo(lineObj, "Spawn Visual");
-            return JsonUtility.ToJson(new BasicRes { message = "Line spawned", id = lineObj.GetInstanceID() });
+            var go = new GameObject("VibeDebug_Line");
+            var lr = go.AddComponent<LineRenderer>();
+            lr.startWidth = 0.01f; lr.endWidth = 0.01f;
+            lr.material = new Material(Shader.Find("Hidden/Internal-Colored"));
+            var s = q["start"].Split(',').Select(float.Parse).ToArray();
+            var e = q["end"].Split(',').Select(float.Parse).ToArray();
+            lr.SetPositions(new Vector3[] { new Vector3(s[0], s[1], s[2]), new Vector3(e[0], e[1], e[2]) });
+            if (q.ContainsKey("color")) {
+                var c = q["color"].Split(',').Select(float.Parse).ToArray();
+                lr.startColor = lr.endColor = new Color(c[0], c[1], c[2]);
+            }
+            Undo.RegisterCreatedObjectUndo(go, "Spawn Debug Line");
+            return JsonUtility.ToJson(new BasicRes { message = "Line spawned", id = go.GetInstanceID() });
         }
 
+        [VibeTool("visual/clear", "Destroys all active debug visuals.")]
         public static string VibeTool_visual_clear(Dictionary<string, string> q) {
-            var all = GameObject.FindObjectsOfType<GameObject>();
             int count = 0;
-            foreach (var go in all) {
-                if (go.name.StartsWith("[VIBE_POINT]") || go.name.StartsWith("[VIBE_LINE]")) {
+            foreach (var go in UnityEngine.Object.FindObjectsOfType<GameObject>()) {
+                if (go.name.StartsWith("VibeDebug_")) {
                     Undo.DestroyObjectImmediate(go);
                     count++;
                 }
             }
-            return JsonUtility.ToJson(new BasicRes { message = $"Cleared {count} markers" });
-        }
-
-        public static string VibeTool_animator_set_param(Dictionary<string, string> q) {
-            GameObject go = Resolve(q["path"]);
-            var anim = go?.GetComponent<Animator>();
-            if (anim == null) return JsonUtility.ToJson(new BasicRes { error = "Animator not found" });
-            
-            string name = q["name"], val = q["value"];
-            if (bool.TryParse(val, out bool b)) anim.SetBool(name, b);
-            else if (float.TryParse(val, out float f)) anim.SetFloat(name, f);
-            else if (int.TryParse(val, out int i)) anim.SetInteger(name, i);
-            
-            return JsonUtility.ToJson(new BasicRes { message = "Parameter set" });
-        }
-
-        private static Vector3 ResolvePosition(Dictionary<string, string> q, string prefix = "") {
-            string pk = string.IsNullOrEmpty(prefix) ? "path" : prefix + "Path";
-            string ok = string.IsNullOrEmpty(prefix) ? "pos" : prefix + "Pos";
-            if (q.ContainsKey(pk)) {
-                GameObject t = Resolve(q[pk]);
-                if (t != null) return t.transform.position;
-            }
-            if (q.ContainsKey(ok)) {
-                var p = q[ok].Split(',').Select(float.Parse).ToArray();
-                if (p.Length == 3) return new Vector3(p[0], p[1], p[2]);
-            }
-            return Vector3.zero;
+            return JsonUtility.ToJson(new BasicRes { message = $"Cleared {count} debug objects" });
         }
     }
 }

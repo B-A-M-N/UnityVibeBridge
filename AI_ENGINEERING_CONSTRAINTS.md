@@ -8,6 +8,7 @@ All code generation and AI operations for this project MUST strictly adhere to t
 1.  **Async-First Execution**: All new tools MUST be implemented using `UniTask` and `AsyncUtils`. Never block the main thread.
 2.  **No Reflection in Serialization**: `JsonUtility` is deprecated for complex types. Use `MemoryPack` for all internal IPC and state persistence. Classes must be marked `partial` and `[MemoryPackable]`.
 3.  **Hardened Core Persistence**: Use `SerializationUtils` and `AsyncUtils` from the `VibeBridge.Core` namespace for all system-level operations.
+4.  **Single-Agent Unified Control**: This project has moved away from a 2-agent (Alpha/Beta) or Director/Specialist architecture. A single agent instance now handles both high-level planning (Conductor) and mechanistic execution (Operator). The agent MUST maintain a single, consistent state of belief and state-hash invariance.
 
 ---
 

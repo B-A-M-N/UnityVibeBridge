@@ -2,74 +2,8 @@
 using System;
 using UnityEngine;
 
-namespace VibeBridge.Core
+namespace UnityVibeBridge.Kernel.Core
 {
-    /// <summary>
-    /// The specific tool being executed.
-    /// This is used to map capabilities to strict interfaces.
-    /// </summary>
-    public enum ToolID
-    {
-        MaterialList,
-        MaterialInspectProperties,
-        MaterialSetColor,
-        MaterialSetTexture,
-        MaterialSetFloat,
-        MaterialToggleKeyword,
-        MaterialSyncSlots,
-        MaterialAssign,
-        MaterialSnapshot,
-        MaterialRestore,
-        MaterialFixBroken,
-        MaterialHideSlot,
-        MaterialPoiyomiLock,
-        // Registry
-        RegistryAdd,
-        RegistryList,
-        // VRChat
-        VrcMenuAdd,
-        VrcParamsAdd,
-        // Standard / Object
-        ObjectSetActive,
-        ObjectSetBlendshape,
-        SystemVramFootprint,
-        TextureCrush,
-        WorldSpawn,
-        WorldSpawnPrimitive,
-        WorldStaticList,
-        WorldStaticSet,
-        AssetMove,
-        PrefabApply,
-        ViewScreenshot,
-        MaterialBatchReplace,
-        SystemFindByComponent,
-        SystemSearch,
-        OptFork,
-        SystemGitCheckpoint,
-        Inspect,
-        Hierarchy,
-        // Auditing
-        AuditAvatar,
-        PhysicsAudit,
-        AnimationAudit,
-        PhysboneRankImportance,
-        // Extras
-        VisualPoint,
-        VisualLine,
-        VisualClear,
-        AnimatorSetParam,
-        // Export
-        ExportValidate,
-        // System / Transaction
-        SystemUndo,
-        SystemRedo,
-        SystemListTools,
-        TransactionBegin,
-        TransactionCommit,
-        TransactionAbort,
-        Status
-    }
-
     /// <summary>
     /// The Contract: Every critical mutation must carry this context.
     /// If missing, the tool must FAIL FAST.

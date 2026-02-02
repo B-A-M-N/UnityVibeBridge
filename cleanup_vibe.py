@@ -14,6 +14,7 @@ def cleanup_vibe(project_path):
         "VibeBridge_VRChatPayload.cs",
         "VibeBridge_AuditingPayload.cs",
         "VibeBridge_ExtrasPayload.cs",
+        "VibeBridge_Stubs.cs",
         "VibeDevHelper.cs"
     ]
 

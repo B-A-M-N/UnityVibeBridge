@@ -20,29 +20,24 @@ def send_and_receive(cmd, filename):
                 return json.load(f)
     return None
 
-print("Inspecting candidates...")
-
-# Inspect ExtoPc (Potential Root)
-cmd = {
-    "action": "inspect",
-    "capability": "read",
-    "keys": ["path"],
-    "values": ["28338"]
-}
-res = send_and_receive(cmd, "inspect_root")
-print("Root Inspection:", json.dumps(res, indent=2))
-
-# Inspect Cyberpants_by_Grey (Potential Body Suit)
-cmd["values"] = ["28214"]
-res = send_and_receive(cmd, "inspect_pants")
-print("Pants Inspection:", json.dumps(res, indent=2))
-
-# Check for a 'Body' mesh specifically if it exists under root
-cmd = {
-    "action": "system/search",
-    "capability": "read",
-    "keys": ["term", "recursive"],
-    "values": ["Body", "true"]
-}
-res = send_and_receive(cmd, "deep_search_body")
-print("Deep Search Body:", json.dumps(res, indent=2))
+ids = ["29118", "29084"]
+for i in ids:
+    print(f"Inspecting {i}...")
+    cmd = {
+        "action": "inspect",
+        "capability": "read",
+        "keys": ["path"],
+        "values": [str(i)]
+    }
+    res = send_and_receive(cmd, f"inspect_{i}")
+    print(json.dumps(res, indent=2))
+    
+    # Also list materials
+    cmd_mat = {
+        "action": "material/list",
+        "capability": "read",
+        "keys": ["path"],
+        "values": [str(i)]
+    }
+    res_mat = send_and_receive(cmd_mat, f"mat_list_{i}")
+    print(json.dumps(res_mat, indent=2))

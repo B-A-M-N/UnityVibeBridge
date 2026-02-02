@@ -4,55 +4,52 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityVibeBridge.Kernel.Core;
 
-namespace VibeBridge {
+namespace UnityVibeBridge.Kernel {
     public static partial class VibeBridgeServer {
         private static float _lastSyncTime = 0;
-        private static DateTime _lastRegistryWrite;
+
         public static void UpdateColorSync() {
             if (Time.realtimeSinceStartup - _lastSyncTime < 0.1f) return; 
             _lastSyncTime = Time.realtimeSinceStartup;
 
-            GameObject root = GameObject.Find("ExtoPc");
+            // Resolve the visual root via UMP or fallback
+            GameObject root = VibeMetadataProvider.ResolveRole("sem:AvatarRoot") ?? GameObject.Find("ExtoPc");
             if (root == null) return;
+
             var anim = root.GetComponent<Animator>();
             if (anim == null) return;
 
             try {
-                // Optimization: Only load registry if file changed
-                string p = "metadata/vibe_registry.json";
-                if (File.Exists(p)) {
-                    var writeTime = File.GetLastWriteTime(p);
-                    if (writeTime != _lastRegistryWrite) {
-                        _lastRegistryWrite = writeTime;
-                        LoadRegistry();
-                    }
-                }
-                
-                float h = anim.GetFloat("Color"), s = anim.GetFloat("ColorSat"), v = anim.GetFloat("ColorPitch");
+                // Fetch all entries in the "AccentAll" group via UMP
+                var entries = VibeMetadataProvider.GetGroup("AccentAll");
+                if (entries.Count == 0) return;
+
+                float h = anim.GetFloat("Color");
+                float s = anim.GetFloat("ColorSat");
+                float v = anim.GetFloat("ColorPitch");
                 Color col = Color.HSVToRGB(h, s, v);
-                foreach (var entry in _registry.entries.Where(e => e.group == "AccentAll")) {
-                    var go = EditorUtility.InstanceIDToObject(entry.lastKnownID) as GameObject;
+
+                foreach (var entry in entries) {
+                    GameObject go = VibeMetadataProvider.ResolveRole(entry.role);
                     var r = go?.GetComponent<Renderer>();
                     if (r != null) {
-                        // Support for selective slot sync
                         if (entry.slotIndex >= 0 && entry.slotIndex < r.sharedMaterials.Length) {
                             var m = r.sharedMaterials[entry.slotIndex];
-                            if (m != null) {
-                                if (m.HasProperty("_Color")) m.SetColor("_Color", col);
-                                if (m.HasProperty("_EmissionColor")) m.SetColor("_EmissionColor", col);
-                            }
+                            if (m != null) ApplyColor(m, col);
                         } else {
-                            // Fallback to all slots if index is invalid or -1
-                            foreach (var m in r.sharedMaterials) {
-                                if (m == null) continue;
-                                if (m.HasProperty("_Color")) m.SetColor("_Color", col);
-                                if (m.HasProperty("_EmissionColor")) m.SetColor("_EmissionColor", col);
-                            }
+                            foreach (var m in r.sharedMaterials) if (m != null) ApplyColor(m, col);
                         }
                     }
                 }
             } catch { }
+        }
+
+        private static void ApplyColor(Material m, Color col) {
+            if (m.HasProperty("_Color")) m.SetColor("_Color", col);
+            if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", col);
+            if (m.HasProperty("_EmissionColor")) m.SetColor("_EmissionColor", col);
         }
     }
 }

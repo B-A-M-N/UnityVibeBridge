@@ -41,7 +41,7 @@ This project answers a critical engineering question:
 | ⚛️ **Kernel Integrity** | Real-time invariant enforcement (No mutations during domain reloads, atomic transactions). |
 | 📦 **LFS Anchored** | High-scale binary assets (.fbx, .png) tracked via **Git LFS** for stable state hashing. |
 | 🧪 **Triple-Order Invariance** | Layered reality (1st), causal (2nd), and epistemic (3rd) constraints preventing drift. |
-| 🛰️ **Multi-Agent Isolation** | Support for **Agent Alpha/Beta/Gamma** workflows with air-gapped context sandboxing. |
+| 🛰️ **Single-Agent Determinism** | Unified control model with strict state enforcement and air-gapped context sandboxing. |
 | 🏃 **Stable Lifecycle** | Time-budgeted main-loop dispatching (5ms slices) ensuring a smooth 60+ FPS. |
 | 🧠 **Epistemic Control** | Truth-reconciliation tools (`telemetry`, `vibe_status`) that prevent AI hallucinations. |
 
@@ -57,7 +57,7 @@ If you are evaluating this project as an engineer or hiring manager, this reposi
     1.  **Mechanical**: Hard engine guards (No mutations during compile).
     2.  **Contextual**: Force-feeding WAL hashes and monotonic ticks into every response.
     3.  **Semantic**: Mandatory "Proof of Work" (Rationale + State Hash) required for every commit.
-*   **Multi-Agent Isolation**: Designed for distributed orchestration where Kernel Coordinators (Agent Alpha) manage specialist engine adapters (Agent Beta/Gamma) via filtered, engine-agnostic IPC.
+*   **Single-Agent Control**: Unified orchestration where the agent manages the engine kernel via filtered, engine-agnostic IPC, ensuring a single point of truth and atomic state transitions.
 *   **Transactional State Mutation**: Every operation is wrapped in undo-safe, atomic blocks. **One AI request = One Undo step.**
 *   **Performance Budgeting**: Implements **5ms Main-Thread Time Budgeting** and adheres to the [Unity Freeze-Proof Guide](metadata/UNITY_FREEZE_PROOF_GUIDE.md) to ensure the Unity Editor maintains 60+ FPS even during heavy AI automation.
 *   **Forensic Audit Trail (Git Logging)**: Every mutation is logged to a cryptographically chained **Write-Ahead Log (WAL)**. For local setup, we recommend configuring Git to track the `logs/` directory as a secondary immutable ledger (see Setup).
@@ -202,7 +202,6 @@ While our "Iron Box" security model is strict, it is designed to **empower** cre
 *   **[Final Invariance Blueprint](HUMAN_ONLY/FINAL_INVARIANCE_BLUEPRINT.md)**: Authoritative map of the distributed proof system and data flow.
 *   **[Triple-Lock Invariance](HUMAN_ONLY/TRIPLE_LOCK_MODEL.md)**: Details on the Layer 1-3 security model preventing hallucination.
 *   **[Epistemic Integrity](HUMAN_ONLY/EPISTEMIC_INTEGRITY.md)**: Third-order invariants preventing systemic self-deception and drift.
-*   **[Multi-Agent Isolation](HUMAN_ONLY/MULTI_AGENT_ARCHITECTURE.md)**: Strategy for high-scale work using isolated AI specialists.
 *   **[Unity Freeze-Proof Guide](metadata/UNITY_FREEZE_PROOF_GUIDE.md)**: Canonical reference for preventing Editor and Runtime hangs.
 *   **[Non-Goals & Doctrine](NON_GOALS.md)**: The intentional limitations and philosophical guardrails of the project.
 *   **[Security Threat Acceptance](AI_SECURITY_THREAT_ACCEPTANCE.md)**: Formal definition of the boundary of responsibility and residual risks.

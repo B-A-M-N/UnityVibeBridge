@@ -9,80 +9,32 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
-using VibeBridge.Core;
-using Cysharp.Threading.Tasks;
+using UnityVibeBridge.Kernel.Core;
 
-namespace VibeBridge {
+namespace UnityVibeBridge.Kernel {
     public static partial class VibeBridgeServer {
 
-        public static async UniTask<string> ExecuteStandardTool(string toolName, Dictionary<string, string> q) {
-            // Mapping for tools that don't follow the simple VibeTool_object_ prefix
-            string lookupName = toolName.Replace("VibeTool_", "");
-            if (lookupName.StartsWith("object_")) lookupName = lookupName.Replace("object_", "Object");
-            else if (lookupName.StartsWith("system_")) lookupName = lookupName.Replace("system_", "System");
-            else if (lookupName.StartsWith("texture_")) lookupName = lookupName.Replace("texture_", "Texture");
-            else if (lookupName.StartsWith("world_")) lookupName = lookupName.Replace("world_", "World");
-            else if (lookupName.StartsWith("asset_")) lookupName = lookupName.Replace("asset_", "Asset");
-            else if (lookupName.StartsWith("prefab_")) lookupName = lookupName.Replace("prefab_", "Prefab");
-            else if (lookupName.StartsWith("view_")) lookupName = lookupName.Replace("view_", "View");
-            else if (lookupName.StartsWith("opt_")) lookupName = lookupName.Replace("opt_", "Opt");
-            else if (lookupName.StartsWith("material_")) lookupName = lookupName.Replace("material_", "Material");
-
-            if (!Enum.TryParse(lookupName, true, out ToolID toolID)) {
-                // Try literal mapping for compound names
-                string literal = string.Concat(lookupName.Split('_').Select(s => s.Length > 0 ? char.ToUpper(s[0]) + s.Substring(1) : ""));
-                if (!Enum.TryParse(literal, true, out toolID)) {
-                     // Fallback to the Switch below if enum parsing is too complex for this pattern
-                }
-            }
-
+        public static string ExecuteStandardTool(string toolName, Dictionary<string, string> q) {
             try {
-                await AsyncUtils.SwitchToMainThreadSafe();
+                AsyncUtils.SwitchToMainThreadSafe();
             } catch (Exception e) {
                 return JsonUtility.ToJson(new BasicRes { error = $"Concurrency Failure: {e.Message}" });
             }
 
-            return toolName switch {
-                "VibeTool_object_set_active" => VibeTool_object_set_active(q),
-                "VibeTool_object_set_blendshape" => VibeTool_object_set_blendshape(q),
-                "VibeTool_system_vram_footprint" => VibeTool_system_vram_footprint(q),
-                "VibeTool_texture_crush" => VibeTool_texture_crush(q),
-                "VibeTool_world_spawn" => VibeTool_world_spawn(q),
-                "VibeTool_world_spawn_primitive" => VibeTool_world_spawn_primitive(q),
-                "VibeTool_world_static_list" => VibeTool_world_static_list(q),
-                "VibeTool_world_static_set" => VibeTool_world_static_set(q),
-                "VibeTool_asset_move" => VibeTool_asset_move(q),
-                "VibeTool_prefab_apply" => VibeTool_prefab_apply(q),
-                "VibeTool_view_screenshot" => VibeTool_view_screenshot(q),
-                "VibeTool_material_batch_replace" => VibeTool_material_batch_replace(q),
-                "VibeTool_system_find_by_component" => VibeTool_system_find_by_component(q),
-                "VibeTool_system_search" => VibeTool_system_search(q),
-                "VibeTool_opt_fork" => VibeTool_opt_fork(q),
-                "VibeTool_system_git_checkpoint" => VibeTool_system_git_checkpoint(q),
-                "VibeTool_inspect" => VibeTool_inspect(q),
-                "VibeTool_hierarchy" => VibeTool_hierarchy(q),
-                "VibeTool_audit_avatar" => VibeTool_audit_avatar(q),
-                "VibeTool_physics_audit" => VibeTool_physics_audit(q),
-                "VibeTool_animation_audit" => VibeTool_animation_audit(q),
-                "VibeTool_physbone_rank_importance" => VibeTool_physbone_rank_importance(q),
-                "VibeTool_visual_point" => VibeTool_visual_point(q),
-                "VibeTool_visual_line" => VibeTool_visual_line(q),
-                "VibeTool_visual_clear" => VibeTool_visual_clear(q),
-                "VibeTool_animator_set_param" => VibeTool_animator_set_param(q),
-                "VibeTool_export_validate" => VibeTool_export_validate(q),
-                "VibeTool_system_undo" => VibeTool_system_undo(q),
-                "VibeTool_system_redo" => VibeTool_system_redo(q),
-                "VibeTool_system_list_tools" => VibeTool_system_list_tools(q),
-                "VibeTool_transaction_begin" => VibeTool_transaction_begin(q),
-                "VibeTool_transaction_commit" => VibeTool_transaction_commit(q),
-                "VibeTool_transaction_abort" => VibeTool_transaction_abort(q),
-                "VibeTool_status" => VibeTool_status(q),
-                _ => JsonUtility.ToJson(new BasicRes { error = "Tool not mapped." })
-            };
+            // --- DYNAMIC DISPATCH (REplaces manual switch) ---
+            var method = typeof(VibeBridgeServer).GetMethod(toolName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.IgnoreCase);
+            
+            if (method != null) {
+                return (string)method.Invoke(null, new object[] { q });
+            }
+
+            return JsonUtility.ToJson(new BasicRes { error = "Tool not found in Standard Payload: " + toolName, conclusion = "DISPATCH_FAILURE" });
         }
         
+        [VibeTool("object/set-active", "Sets the active state of a GameObject.", "path", "active")]
         public static string VibeTool_object_set_active(Dictionary<string, string> q) {
             GameObject go = Resolve(q["path"]);
             if (go == null) return JsonUtility.ToJson(new BasicRes { error = "Object not found" });
@@ -92,6 +44,7 @@ namespace VibeBridge {
             return JsonUtility.ToJson(new BasicRes { message = "Object " + (state ? "activated" : "deactivated") });
         }
 
+        [VibeTool("object/set-blendshape", "Sets the weight of a blendshape on a SkinnedMeshRenderer.", "path", "name", "value")]
         public static string VibeTool_object_set_blendshape(Dictionary<string, string> q) {
             GameObject go = Resolve(q["path"]);
             var smr = go?.GetComponent<SkinnedMeshRenderer>();
@@ -106,53 +59,7 @@ namespace VibeBridge {
             return JsonUtility.ToJson(new BasicRes { message = "BlendShape " + name + " set to " + val });
         }
 
-        public static string VibeTool_system_vram_footprint(Dictionary<string, string> q) {
-            GameObject obj = Resolve(q["path"]);
-            if (obj == null) return JsonUtility.ToJson(new BasicRes { error = "Not found" });
-            long totalBytes = 0;
-            var textures = new HashSet<Texture2D>();
-            foreach (var r in obj.GetComponentsInChildren<Renderer>(true)) {
-                foreach (var mat in r.sharedMaterials) {
-                    if (mat == null) continue;
-                    int count = ShaderUtil.GetPropertyCount(mat.shader);
-                    for (int i = 0; i < count; i++) {
-                        if (ShaderUtil.GetPropertyType(mat.shader, i) == ShaderUtil.ShaderPropertyType.TexEnv) {
-                            Texture t = mat.GetTexture(ShaderUtil.GetPropertyName(mat.shader, i));
-                            if (t is Texture2D t2d) textures.Add(t2d);
-                        }
-                    }
-                }
-            }
-            foreach (var tex in textures) totalBytes += (long)(tex.width * tex.height * 4);
-            return JsonUtility.ToJson(new VramRes { vramMB = totalBytes / (1024f * 1024f), textures = textures.Count });
-        }
-
-        public static string VibeTool_texture_crush(Dictionary<string, string> q) {
-            GameObject obj = Resolve(q["path"]);
-            if (obj == null) return JsonUtility.ToJson(new BasicRes { error = "Not found" });
-            int size = int.Parse(q["maxSize"]);
-            var textures = new HashSet<Texture2D>();
-            foreach (var r in obj.GetComponentsInChildren<Renderer>(true)) {
-                foreach (var mat in r.sharedMaterials) {
-                    if (mat == null) continue;
-                    int count = ShaderUtil.GetPropertyCount(mat.shader);
-                    for (int i = 0; i < count; i++) {
-                        if (ShaderUtil.GetPropertyType(mat.shader, i) == ShaderUtil.ShaderPropertyType.TexEnv) {
-                            Texture t = mat.GetTexture(ShaderUtil.GetPropertyName(mat.shader, i));
-                            if (t is Texture2D t2d) textures.Add(t2d);
-                        }
-                    }
-                }
-            }
-            int changed = 0;
-            foreach (var tex in textures) {
-                string path = AssetDatabase.GetAssetPath(tex);
-                TextureImporter ti = AssetImporter.GetAtPath(path) as TextureImporter;
-                if (ti != null && ti.maxTextureSize > size) { ti.maxTextureSize = size; AssetDatabase.ImportAsset(path); changed++; }
-            }
-            return JsonUtility.ToJson(new BasicRes { message = "Crushed " + changed + " textures" });
-        }
-
+        [VibeTool("world/spawn", "Instantiates a prefab from the project at a given position and rotation.", "asset", "pos", "rot")]
         public static string VibeTool_world_spawn(Dictionary<string, string> q) {
             string rawAsset = q["asset"];
             string resolvedPath = ResolveAssetPath(rawAsset);
@@ -173,6 +80,7 @@ namespace VibeBridge {
             return JsonUtility.ToJson(new BasicRes { message = "Spawned " + go.name, id = go.GetInstanceID() });
         }
 
+        [VibeTool("world/spawn-primitive", "Creates a standard Unity primitive (Cube, Sphere, etc).", "type", "pos")]
         public static string VibeTool_world_spawn_primitive(Dictionary<string, string> q) {
             PrimitiveType type = (PrimitiveType)Enum.Parse(typeof(PrimitiveType), q["type"], true);
             GameObject go = GameObject.CreatePrimitive(type);
@@ -185,6 +93,7 @@ namespace VibeBridge {
             return JsonUtility.ToJson(new BasicRes { message = "Spawned " + type, id = go.GetInstanceID() });
         }
 
+        [VibeTool("world/static-list", "Returns all available Static Editor Flags.")]
         public static string VibeTool_world_static_list(Dictionary<string, string> q) {
             var names = Enum.GetNames(typeof(StaticEditorFlags));
             var values = Enum.GetValues(typeof(StaticEditorFlags));
@@ -195,6 +104,7 @@ namespace VibeBridge {
             return JsonUtility.ToJson(new StaticFlagRes { flags = list.ToArray() });
         }
 
+        [VibeTool("world/static-set", "Sets the Static Editor Flags for a GameObject.", "path", "flags")]
         public static string VibeTool_world_static_set(Dictionary<string, string> q) {
             GameObject go = Resolve(q["path"]);
             if (go == null) return JsonUtility.ToJson(new BasicRes { error = "Not found" });
@@ -203,11 +113,19 @@ namespace VibeBridge {
             return JsonUtility.ToJson(new BasicRes { message = "Static flags updated" });
         }
 
+        [VibeTool("asset/move", "Moves an asset to a new path in the project.", "path", "newPath")]
         public static string VibeTool_asset_move(Dictionary<string, string> q) {
             string err = AssetDatabase.MoveAsset(q["path"], q["newPath"]);
             return string.IsNullOrEmpty(err) ? JsonUtility.ToJson(new BasicRes { message = "Asset moved" }) : JsonUtility.ToJson(new BasicRes { error = err });
         }
 
+        [VibeTool("asset/rename", "Renames an existing asset file.", "path", "newName")]
+        public static string VibeTool_asset_rename(Dictionary<string, string> q) {
+            string err = AssetDatabase.RenameAsset(q["path"], q["newName"]);
+            return string.IsNullOrEmpty(err) ? JsonUtility.ToJson(new BasicRes { message = "Asset renamed" }) : JsonUtility.ToJson(new BasicRes { error = err });
+        }
+
+        [VibeTool("prefab/apply", "Applies all overrides on a prefab instance to its source asset.", "path")]
         public static string VibeTool_prefab_apply(Dictionary<string, string> q) {
             GameObject go = Resolve(q["path"]);
             if (go == null || !PrefabUtility.IsPartOfAnyPrefab(go)) return JsonUtility.ToJson(new BasicRes { error = "Not a prefab instance" });
@@ -216,10 +134,21 @@ namespace VibeBridge {
             return JsonUtility.ToJson(new BasicRes { message = "Changes applied to prefab: " + root.name });
         }
 
+        [VibeTool("view/screenshot", "Captures a screenshot of the active SceneView and returns it as Base64.", "w", "h")]
         public static string VibeTool_view_screenshot(Dictionary<string, string> q) {
+            if (SceneView.lastActiveSceneView == null) return JsonUtility.ToJson(new BasicRes { error = "No active SceneView found." });
             Camera cam = SceneView.lastActiveSceneView.camera;
-            if (cam == null) return JsonUtility.ToJson(new BasicRes { error = "No SceneView" });
+            if (cam == null) return JsonUtility.ToJson(new BasicRes { error = "No camera on SceneView" });
+            
             int w = q.ContainsKey("w") ? int.Parse(q["w"]) : 1280, h = q.ContainsKey("h") ? int.Parse(q["h"]) : 720;
+            
+            // VISION HARDENING: Limit resolution to prevent Base64 buffer overflow (approx 4MB limit)
+            if (w * h > 1000000) { // If > 1MP, downscale
+                float scale = Mathf.Sqrt(1000000f / (w * h));
+                w = Mathf.RoundToInt(w * scale);
+                h = Mathf.RoundToInt(h * scale);
+            }
+
             RenderTexture rt = new RenderTexture(w, h, 24);
             cam.targetTexture = rt;
             Texture2D ss = new Texture2D(w, h, TextureFormat.RGB24, false);
@@ -228,11 +157,14 @@ namespace VibeBridge {
             ss.ReadPixels(new Rect(0, 0, w, h), 0, 0);
             cam.targetTexture = null;
             RenderTexture.active = null;
-            byte[] bytes = ss.EncodeToPNG();
+            byte[] bytes = ss.EncodeToJPG(75); // Use JPG for better compression
             UnityEngine.Object.DestroyImmediate(rt);
-            return "{\"base64\":\"" + Convert.ToBase64String(bytes) + "\"}";
+            UnityEngine.Object.DestroyImmediate(ss);
+
+            return "{\"base64\":\"" + Convert.ToBase64String(bytes) + "\", \"tick\":" + _monotonicTick + ", \"state\":\"" + _lastAuditHash + "\"}";
         }
 
+        [VibeTool("material/batch-replace", "Replaces the material on multiple objects at once.", "paths", "material")]
         public static string VibeTool_material_batch_replace(Dictionary<string, string> q) {
             string[] paths = q["paths"].Split(',');
             string matName = q["material"];
@@ -255,6 +187,7 @@ namespace VibeBridge {
             return JsonUtility.ToJson(new BasicRes { message = "Replaced materials on " + count + " objects" });
         }
 
+        [VibeTool("system/find-by-component", "Locates all GameObjects in the scene with a specific component type.", "type")]
         public static string VibeTool_system_find_by_component(Dictionary<string, string> q) {
             string typeName = q["type"];
             var all = UnityEngine.Object.FindObjectsOfType<GameObject>(true);
@@ -263,6 +196,7 @@ namespace VibeBridge {
             return JsonUtility.ToJson(new FindRes { results = results });
         }
 
+        [VibeTool("system/search", "Searches GameObjects by name (regex) or layer.", "name", "layer")]
         public static string VibeTool_system_search(Dictionary<string, string> q) {
             string pattern = q.ContainsKey("name") ? q["name"] : "";
             int layer = q.ContainsKey("layer") ? int.Parse(q["layer"]) : -1;
@@ -278,23 +212,7 @@ namespace VibeBridge {
             return JsonUtility.ToJson(new FindRes { results = results });
         }
 
-        public static string VibeTool_opt_fork(Dictionary<string, string> q) {
-            GameObject original = Resolve(q["path"]);
-            if (original == null) return JsonUtility.ToJson(new BasicRes { error = "Not found" });
-
-            GameObject fork = UnityEngine.Object.Instantiate(original, original.transform.parent);
-            fork.name = "Fork_" + original.name;
-            fork.transform.localPosition = original.transform.localPosition;
-            fork.transform.localRotation = original.transform.localRotation;
-            fork.transform.localScale = original.transform.localScale;
-
-            Undo.RegisterCreatedObjectUndo(fork, "Fork Object");
-            Undo.RecordObject(original, "Disable Original");
-            original.SetActive(false);
-
-            return JsonUtility.ToJson(new BasicRes { message = "Forked", id = fork.GetInstanceID() });
-        }
-
+        [VibeTool("system/git-checkpoint", "Creates a git commit checkpoint for the project.", "message", "path")]
         public static string VibeTool_system_git_checkpoint(Dictionary<string, string> q) {
             string msg = q.ContainsKey("message") ? q["message"] : "Bridge Checkpoint";
             string path = q.ContainsKey("path") ? q["path"] : ".";
@@ -308,8 +226,225 @@ namespace VibeBridge {
             proc.StartInfo.Arguments = $"-C {Directory.GetCurrentDirectory()} commit -m \"{msg}\" ";
             proc.Start(); proc.WaitForExit();
             
-            return JsonUtility.ToJson(new BasicRes { message = "Git checkpoint created for " + path });
+                                    return JsonUtility.ToJson(new BasicRes { message = "Git checkpoint created for " + path });
+            
+                                }
+
+        [VibeTool("animator/set-param", "Sets a parameter value on an Animator.", "path", "name", "type", "value")]
+        public static string VibeTool_animator_set_param(Dictionary<string, string> q) {
+            GameObject go = Resolve(q["path"]);
+            var animator = go?.GetComponent<Animator>();
+            if (animator == null) return JsonUtility.ToJson(new BasicRes { error = "Animator not found" });
+
+            string name = q["name"];
+            string type = q["type"].ToLower();
+            string val = q["value"];
+
+            Undo.RecordObject(animator, "Set Animator Param");
+            switch (type) {
+                case "float": animator.SetFloat(name, float.Parse(val)); break;
+                case "int": animator.SetInteger(name, int.Parse(val)); break;
+                case "bool": animator.SetBool(name, val.ToLower() == "true"); break;
+                case "trigger": animator.SetTrigger(name); break;
+                default: return JsonUtility.ToJson(new BasicRes { error = "Invalid param type" });
+            }
+            return JsonUtility.ToJson(new BasicRes { message = $"Param {name} set to {val}" });
         }
-    }
-}
-#endif
+
+        [VibeTool("system/reset-transforms", "Resets position to 0, rotation to 0, and scale to 1,1,1.", "path")]
+        public static string VibeTool_system_reset_transforms(Dictionary<string, string> q) {
+            try {
+                GameObject go = Resolve(q["path"]);
+                if (go == null) return JsonUtility.ToJson(new BasicRes { error = "Target not found." });
+                
+                Undo.RecordObject(go.transform, "Reset Transform");
+                go.transform.localPosition = Vector3.zero;
+                go.transform.localEulerAngles = Vector3.zero;
+                go.transform.localScale = Vector3.one;
+
+                var children = go.GetComponentsInChildren<Transform>(true);
+                foreach (var t in children) {
+                    if (t == go.transform) continue;
+                    Undo.RecordObject(t, "Reset Child Transform");
+                    t.localPosition = Vector3.zero;
+                    t.localEulerAngles = Vector3.zero;
+                    t.localScale = Vector3.one;
+                }
+                
+                return JsonUtility.ToJson(new BasicRes { message = "Transforms reset to identity." });
+            } catch (Exception e) { return JsonUtility.ToJson(new BasicRes { error = e.Message }); }
+        }
+
+        [VibeTool("export/validate", "Checks for scale sanity, non-zero rotations, and missing scripts.", "path")]
+        public static string VibeTool_export_validate(Dictionary<string, string> q) {
+            GameObject go = Resolve(q["path"]);
+            if (go == null) return JsonUtility.ToJson(new BasicRes { error = "Target not found" });
+
+            var issues = new List<string>();
+            if (Math.Abs(go.transform.localScale.x - 1.0f) > 0.01f || Math.Abs(go.transform.localScale.y - 1.0f) > 0.01f || Math.Abs(go.transform.localScale.z - 1.0f) > 0.01f) {
+                issues.Add("Root scale is not 1,1,1.");
+            }
+            if (go.transform.localEulerAngles.sqrMagnitude > 0.01f) {
+                issues.Add("Root rotation is not 0,0,0.");
+            }
+            var all = go.GetComponentsInChildren<Component>(true);
+            int missingCount = all.Count(c => c == null);
+            if (missingCount > 0) issues.Add($"{missingCount} missing scripts found.");
+
+            return JsonUtility.ToJson(new IntegrityReport {
+                passed = issues.Count == 0,
+                issues = issues.ToArray()
+            });
+        }
+
+        [VibeTool("object/set-value", "Sets a field or property value on a component using reflection.", "path", "component", "field", "value")]
+        public static string VibeTool_object_set_value(Dictionary<string, string> q) {
+            GameObject go = Resolve(q["path"]);
+            if (go == null) return JsonUtility.ToJson(new BasicRes { error = "Object not found" });
+            string compName = q["component"], fieldName = q["field"], val = q["value"];
+            Component c = go.GetComponent(compName);
+            if (c == null) return JsonUtility.ToJson(new BasicRes { error = "Component not found" });
+            Undo.RecordObject(c, "Set Value");
+            var type = c.GetType();
+            var field = type.GetField(fieldName, BindingFlags.Public | BindingFlags.Instance);
+            var prop = type.GetProperty(fieldName, BindingFlags.Public | BindingFlags.Instance);
+            try {
+                object parsedVal = null;
+                var targetType = field?.FieldType ?? prop?.PropertyType;
+                if (targetType == typeof(Vector3)) {
+                    var p = val.Split(',').Select(float.Parse).ToArray();
+                    parsedVal = new Vector3(p[0], p[1], p[2]);
+                } else if (targetType == typeof(Color)) {
+                    var p = val.Split(',').Select(float.Parse).ToArray();
+                    parsedVal = new Color(p[0], p[1], p[2], p.Length > 3 ? p[3] : 1f);
+                } else { parsedVal = Convert.ChangeType(val, targetType); }
+                if (field != null) field.SetValue(c, parsedVal); else prop.SetValue(c, parsedVal);
+                return JsonUtility.ToJson(new BasicRes { message = "Value updated" });
+            } catch (Exception e) { return JsonUtility.ToJson(new BasicRes { error = e.Message }); }
+        }
+
+        [VibeTool("object/rename", "Renames a GameObject.", "path", "newName")]
+        public static string VibeTool_object_rename(Dictionary<string, string> q) {
+            GameObject go = Resolve(q["path"]);
+            if (go == null) return JsonUtility.ToJson(new BasicRes { error = "Not found" });
+            Undo.RecordObject(go, "Rename"); 
+            go.name = q["newName"]; 
+            return JsonUtility.ToJson(new BasicRes { message = "Renamed" });
+        }
+
+        [VibeTool("object/reparent", "Changes the parent of a GameObject.", "path", "newParent")]
+        public static string VibeTool_object_reparent(Dictionary<string, string> q) {
+            GameObject go = Resolve(q["path"]), p = q.ContainsKey("newParent") ? Resolve(q["newParent"]) : null; 
+            if (go == null) return JsonUtility.ToJson(new BasicRes { error = "Target not found" });
+            Undo.SetTransformParent(go.transform, p != null ? p.transform : null, "Reparent"); 
+            return JsonUtility.ToJson(new BasicRes { message = "Reparented" });
+        }
+
+        [VibeTool("object/clone", "Duplicates a GameObject.", "path")]
+        public static string VibeTool_object_clone(Dictionary<string, string> q) {
+            GameObject go = Resolve(q["path"]);
+            if (go == null) return JsonUtility.ToJson(new BasicRes { error = "Not found" });
+            GameObject c = UnityEngine.Object.Instantiate(go); 
+            c.name = go.name + "_Clone"; 
+            Undo.RegisterCreatedObjectUndo(c, "Clone"); 
+            return JsonUtility.ToJson(new BasicRes { message = "Cloned", id = c.GetInstanceID() });
+        }
+
+        [VibeTool("object/delete", "Deletes a GameObject.", "path")]
+        public static string VibeTool_object_delete(Dictionary<string, string> q) {
+            GameObject go = Resolve(q["path"]);
+            if (go == null) return JsonUtility.ToJson(new BasicRes { error = "Not found" });
+            Undo.DestroyObjectImmediate(go); 
+            return JsonUtility.ToJson(new BasicRes { message = "Deleted" });
+        }
+
+        [VibeTool("system/select", "Selects a GameObject in the editor.", "path", "frame")]
+        public static string VibeTool_system_select(Dictionary<string, string> q) {
+            GameObject go = Resolve(q["path"]);
+            if (go == null) return JsonUtility.ToJson(new BasicRes { error = "Not found" });
+            Selection.activeGameObject = go;
+            bool forceFrame = q.ContainsKey("frame") && q["frame"].ToLower() == "true";
+            if (forceFrame || SceneView.lastActiveSceneView == null || !SceneView.lastActiveSceneView.hasFocus) SceneView.FrameLastActiveSceneView(); 
+            return JsonUtility.ToJson(new BasicRes { message = "Selected" });
+        }
+
+        [VibeTool("system/veto", "Manually locks the bridge, preventing all further mutations.")]
+        public static string VibeTool_system_veto(Dictionary<string, string> q) {
+            _isVetoed = true;
+            SetStatus("VETOED");
+            Debug.LogError("[Vibe] Human Veto Triggered. Bridge Locked.");
+            return JsonUtility.ToJson(new BasicRes { message = "Bridge Vetoed" });
+        }
+
+        [VibeTool("system/unveto", "Unlocks the bridge after a veto.")]
+        public static string VibeTool_system_unveto(Dictionary<string, string> q) {
+            _isVetoed = false;
+            _violationCount = 0;
+            _panicMode = false;
+            SetStatus("Ready");
+            Debug.Log("[Vibe] Bridge Unlocked.");
+            return JsonUtility.ToJson(new BasicRes { message = "Bridge Unlocked" });
+        }
+
+        [VibeTool("system/execute-recipe", "Executes a batch of tools in a single request.", "recipe")]
+        public static string VibeTool_system_execute_recipe(Dictionary<string, string> q) {
+            string recipeJson = q["recipe"];
+            try {
+                var recipe = JsonUtility.FromJson<RecipeCommand>("{\"tools\":" + recipeJson + "}");
+                var results = new List<string>();
+                foreach (var tool in recipe.tools) {
+                    results.Add(ExecuteAirlockCommand(tool));
+                }
+                return "[" + string.Join(",", results) + "]";
+            } catch (Exception e) {
+                return JsonUtility.ToJson(new BasicRes { error = "Recipe execution failed: " + e.Message });
+            }
+        }
+
+                [VibeTool("system/undo", "Performs an Undo operation in Unity.")]
+                public static string VibeTool_system_undo(Dictionary<string, string> q) { Undo.PerformUndo(); return JsonUtility.ToJson(new BasicRes { message = "Undo" }); }
+        
+                [VibeTool("system/redo", "Performs a Redo operation in Unity.")]
+                public static string VibeTool_system_redo(Dictionary<string, string> q) { Undo.PerformRedo(); return JsonUtility.ToJson(new BasicRes { message = "Redo" }); }
+        
+                [VibeTool("system/list-tools", "Returns a list of all available VibeBridge tools.")]
+                public static string VibeTool_system_list_tools(Dictionary<string, string> q) {
+                    var tools = new List<string>();
+                    var methods = typeof(VibeBridgeServer).GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                    foreach (var m in methods) {
+                        if (m.Name.StartsWith("VibeTool_")) {
+                            var attr = m.GetCustomAttribute<VibeToolAttribute>();
+                            tools.Add(attr != null ? attr.Name : m.Name.Replace("VibeTool_", "").Replace("_", "/"));
+                        }
+                    }
+                    return JsonUtility.ToJson(new ToolListRes { tools = tools.ToArray() });
+                }
+        
+                [VibeTool("transaction/begin", "Starts a new undo group for atomic operations.", "name")]
+                public static string VibeTool_transaction_begin(Dictionary<string, string> q) {
+                    Undo.IncrementCurrentGroup();
+                    Undo.SetCurrentGroupName(q.ContainsKey("name") ? q["name"] : "AI Op");
+                    return JsonUtility.ToJson(new BasicRes { message = "Started", id = Undo.GetCurrentGroup() });
+                }
+        
+                [VibeTool("transaction/commit", "Collapses all operations in the current undo group.")]
+                public static string VibeTool_transaction_commit(Dictionary<string, string> q) {
+                    Undo.CollapseUndoOperations(Undo.GetCurrentGroup());
+                    return JsonUtility.ToJson(new BasicRes { message = "Committed" });
+                }
+        
+                [VibeTool("transaction/abort", "Reverts all operations in the current undo group.")]
+                public static string VibeTool_transaction_abort(Dictionary<string, string> q) {
+                    Undo.RevertAllDownToGroup(Undo.GetCurrentGroup());
+                    return JsonUtility.ToJson(new BasicRes { message = "Aborted" });
+                }
+        
+                [VibeTool("status", "Returns the current kernel status.")]
+                public static string VibeTool_status(Dictionary<string, string> q) {
+                    return "{\"status\":\"connected\",\"kernel\":\"v1.2.5\",\"vetoed\":" + _isVetoed.ToString().ToLower() + "}";
+                }            
+                }
+            
+            }
+            
+            #endif

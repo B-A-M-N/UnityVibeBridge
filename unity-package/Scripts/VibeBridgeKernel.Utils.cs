@@ -7,8 +7,43 @@ using System.Net;
 using UnityEditor;
 using UnityEngine;
 
-namespace VibeBridge {
+namespace UnityVibeBridge.Kernel {
     public static partial class VibeBridgeServer {
+        public static string ComputeHash(string input) {
+            using (var sha = System.Security.Cryptography.SHA256.Create()) {
+                byte[] bytes = sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(input));
+                return BitConverter.ToString(bytes).Replace("-", "").ToLower();
+            }
+        }
+
+        public static string ResolveAssetPath(string input, string filter = "t:Object") {
+            if (string.IsNullOrEmpty(input)) return null;
+            if (input.StartsWith("Assets/")) return input;
+            string[] guids = AssetDatabase.FindAssets(input + " " + filter);
+            if (guids.Length > 0) return AssetDatabase.GUIDToAssetPath(guids[0]);
+            return null;
+        }
+
+        private static GameObject Resolve(string path) {
+            if (string.IsNullOrEmpty(path)) return null;
+            if (int.TryParse(path, out int id)) return EditorUtility.InstanceIDToObject(id) as GameObject;
+            if (path.StartsWith("sem:")) {
+                return Core.VibeMetadataProvider.ResolveRole(path);
+            }
+            return GameObject.Find(path);
+        }
+
+        public static string GetGameObjectPath(GameObject obj, GameObject root) {
+            if (obj == root) return ".";
+            string path = obj.name;
+            while (obj.transform.parent != null && obj.transform.parent.gameObject != root) {
+                obj = obj.transform.parent.gameObject;
+                path = obj.name + "/" + path;
+            }
+            return path;
+        }
+
+        [VibeTool("inspect", "Returns detailed transform, component, and blendshape data for an object.", "path")]
         public static string VibeTool_inspect(Dictionary<string, string> q) {
             GameObject go = Resolve(q["path"]);
             if (go == null) return JsonUtility.ToJson(new BasicRes { error = "Not found" });
@@ -27,6 +62,7 @@ namespace VibeBridge {
             });
         }
 
+        [VibeTool("hierarchy", "Returns a flat list of all GameObjects in the active scene.")]
         public static string VibeTool_hierarchy(Dictionary<string, string> q) {
             var all = UnityEngine.Object.FindObjectsOfType<GameObject>();
             return JsonUtility.ToJson(new HierarchyRes { objects = all.Select(o => new HierarchyRes.ObjectNode { name = o.name, id = o.GetInstanceID() }).ToArray() });

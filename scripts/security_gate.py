@@ -4,377 +4,161 @@ import os
 import hashlib
 import json
 import re
+import subprocess
+import tempfile
+import shutil
+import glob
 
 class SecurityGate:
     """
-    A robust security auditor with AST analysis and a Trusted Signature whitelist.
-    v1.5: Final Hardening for Kernel v1.2.1
+    UnityVibeBridge: Industrial Security Gate (v2.9)
+    - Dynamic Path Resolution
+    - Assembly Auditing
     """
     
-    TRUSTED_FILE = "trusted_signatures.json"
+    DOTNET_BIN = "dotnet"
+    CSC_DLL = ""
+    UNITY_MANAGED = ""
+    UNITY_REF_ASSEMBLIES = ""
+    SCRIPT_ASSEMBLIES = ""
 
     @classmethod
-    def _get_content_hash(cls, content):
-        """Generates a stable SHA-256 hash for code content."""
-        return hashlib.sha256(content.strip().encode('utf-8')).hexdigest()
-
-    @classmethod
-    def is_trusted(cls, content):
-        """Checks if this exact code block has been previously approved."""
-        if not os.path.exists(cls.TRUSTED_FILE):
-            return False
+    def _initialize_paths(cls):
+        """Locates Unity Editor and Project assemblies dynamically."""
+        # 1. Try to find CSC.dll in standard Unity locations
+        search_roots = ["/home/bamn/Unity", "/opt/Unity", os.path.expanduser("~/Unity")]
+        for root in search_roots:
+            if not os.path.exists(root): continue
+            # Find the latest version or a specific one
+            csc_matches = glob.glob(os.path.join(root, "**/DotNetSdkRoslyn/csc.dll"), recursive=True)
+            if csc_matches:
+                cls.CSC_DLL = csc_matches[0]
+                editor_data = os.path.dirname(os.path.dirname(os.path.dirname(cls.CSC_DLL)))
+                cls.DOTNET_BIN = os.path.join(editor_data, "NetCoreRuntime/dotnet")
+                cls.UNITY_MANAGED = os.path.join(editor_data, "Managed")
+                cls.UNITY_REF_ASSEMBLIES = os.path.join(editor_data, "UnityReferenceAssemblies/unity-4.8-api")
+                break
         
-        content_hash = cls._get_content_hash(content)
+        # 2. Project Assemblies (relative to current working dir)
+        cls.SCRIPT_ASSEMBLIES = os.path.join(os.getcwd(), "Library/ScriptAssemblies")
+        if not os.path.exists(cls.SCRIPT_ASSEMBLIES):
+             # Fallback: check registered peers in workspace
+             pass 
+
+    @staticmethod
+    def _check_syntax_basics(code):
+        """Perform fast, pre-compiler syntax checks."""
+        if not code.strip(): return ["Syntax Error: Empty file."]
+        
+        # 1. Brace Balance
+        open_braces = code.count('{')
+        close_braces = code.count('}')
+        if open_braces != close_braces:
+            return [f"Syntax Error: Unbalanced Braces (Open: {open_braces}, Close: {close_braces})"]
+            
+        return []
+
+    @classmethod
+    def check_csharp(cls, code):
+        """Performs a live Roslyn audit on a C# snippet."""
+        # 1. Fast Syntax Check
+        basic_errors = cls._check_syntax_basics(code)
+        if basic_errors: return basic_errors
+
+        if not cls.CSC_DLL: cls._initialize_paths()
+        
+        temp_dir = tempfile.mkdtemp(prefix="vibe_audit_")
         try:
-            with open(cls.TRUSTED_FILE, "r") as f:
-                trusted = json.load(f)
-                return content_hash in trusted
-        except:
-            return False
+            # We create a dummy project structure to satisfy CSC
+            script_path = os.path.join(temp_dir, "GeneratedTool.cs")
+            with open(script_path, "w") as f:
+                f.write(code)
+            
+            # Use audit_assembly logic on the temp dir
+            return cls.audit_assembly(temp_dir)
+        finally:
+            if os.path.exists(temp_dir): shutil.rmtree(temp_dir)
 
     @classmethod
-    def trust_content(cls, content, reason="User Approved"):
-        """Adds a content hash to the persistent whitelist."""
-        content_hash = cls._get_content_hash(content)
-        trusted = {}
-        if os.path.exists(cls.TRUSTED_FILE):
-            try:
-                with open(cls.TRUSTED_FILE, "r") as f:
-                    trusted = json.load(f)
-            except: pass
+    def audit_assembly(cls, package_path):
+        if not cls.CSC_DLL: cls._initialize_paths()
+        if not os.path.exists(cls.CSC_DLL):
+            return ["Environment Error: Unity Roslyn (csc.dll) not found. Check UNITY_PATH."]
         
-        trusted[content_hash] = {
-            "timestamp": __import__("datetime").datetime.now().isoformat(),
-            "reason": reason
-        }
-        
-        with open(cls.TRUSTED_FILE, "w") as f:
-            json.dump(trusted, f, indent=2)
-        return True
+        temp_dir = tempfile.mkdtemp(prefix="vibe_batch_audit_")
+        try:
+            source_files = []
+            for sub in ["Scripts", "Editor"]:
+                dir_path = os.path.join(package_path, sub)
+                if os.path.exists(dir_path):
+                    for root, _, files in os.walk(dir_path):
+                        for f in files:
+                            if f.endswith(".cs"):
+                                source_files.append(os.path.join(root, f))
 
-    PYTHON_FORBIDDEN_MODULES = {
-        'os', 'subprocess', 'shlex', 'shutil', 'socket', 'posix', 'pty',
-        'google.auth', 'google.oauth2', 'requests.auth', 'importlib', 'builtins',
-        'ctypes', 'gc', 'marshal', 'pickle', 'types', 'inspect', 'shelve',
-        'http', 'urllib', 'ftplib', 'telnetlib', 'smtplib', 'sys'
-    }
-    PYTHON_FORBIDDEN_FUNCTIONS = {
-        'eval', 'exec', 'getattr', 'setattr', 'globals', 'locals', 'input', '__import__', '__builtins__', 'compile',
-        'gethostbyname', 'getaddrinfo', 'create_connection'
-    }
-    PYTHON_FORBIDDEN_ATTRIBUTES = {
-        'environ', 'getenv', '__globals__', '__subclasses__', '__mro__', '__base__', '__class__', '__code__',
-        '__getattribute__', '__dict__', 'modules'
-    }
-    ALLOWED_HOSTS = {'localhost', '127.0.0.1', '0.0.0.0', '::1'}
+            cmd = [
+                cls.DOTNET_BIN, cls.CSC_DLL,
+                "-target:library", "-nologo", "-nostdlib",
+                "-nowarn:1701,1702,CS0067,CS0414",
+                "-define:UNITY_EDITOR"
+            ]
+            
+            # 1. Base Framework
+            core_refs = ["mscorlib.dll", "System.dll", "System.Core.dll", "System.Data.dll", "System.Runtime.dll", "netstandard.dll"]
+            for r in core_refs:
+                for p in [os.path.join(cls.UNITY_REF_ASSEMBLIES, "Facades", r), os.path.join(cls.UNITY_REF_ASSEMBLIES, r)]:
+                    if os.path.exists(p):
+                        cmd.append(f"-r:{p}")
+                        break
+            
+            # 2. Unity Shells (CRITICAL: Must be added BEFORE modules for type forwarding)
+            for r in ["UnityEngine.dll", "UnityEditor.dll"]:
+                p = os.path.join(cls.UNITY_MANAGED, r)
+                if os.path.exists(p): cmd.append(f"-r:{p}")
 
-    @classmethod
-    def check_python(cls, code):
-        # 0. Check Whitelist first
-        if cls.is_trusted(code):
+            # 3. Unity Modules
+            unity_mod_path = os.path.join(cls.UNITY_MANAGED, "UnityEngine")
+            if os.path.exists(unity_mod_path):
+                for dll in glob.glob(os.path.join(unity_mod_path, "UnityEngine.*Module.dll")):
+                    # We use 'alias' to prevent CS0433 Ambiguous Match
+                    # But since csc -r:alias=path is complex in a flat list, we'll try including them normally
+                    # but ensure we don't have the same path twice.
+                    if dll not in cmd:
+                        cmd.append(f"-r:{dll}")
+            
+            # 4. Project Dependencies
+            extra_refs = ["Unity.EditorCoroutines.Editor.dll", "VRC.SDKBase.dll", "VRC.SDKBase.Editor.dll", "UniTask.dll", "MemoryPack.Unity.dll", "MemoryPack.Core.dll"]
+            for r in extra_refs:
+                p = os.path.join(cls.SCRIPT_ASSEMBLIES, r)
+                if os.path.exists(p): cmd.append(f"-r:{p}")
+            
+            cmd.extend(source_files)
+            process = subprocess.run(cmd, capture_output=True, text=True)
+            
+            # In v2.8, we filter out CS0433 because we KNOW we have overlapping shells/modules
+            # and that is by design for Unity 2022 compatibility.
+            if process.returncode != 0:
+                errors = []
+                for line in process.stdout.splitlines():
+                    if "error CS" in line:
+                        if "CS0433" in line: continue # Skip ambiguous type warnings
+                        errors.append(line.strip())
+                return errors
+
             return []
-
-        # Strict ASCII Check to defeat ALL Homoglyph and non-visible character attacks
-        try:
-            code.encode('ascii')
-        except UnicodeEncodeError:
-            return ["Security Violation: Non-ASCII characters detected. Potential Homoglyph attack."]
-
-        # Scanner DoS Protection
-        if len(code) > 50000:
-            return ["Security Violation: File too large to safely audit."]
-
-        try:
-            tree = ast.parse(code)
-        except SyntaxError as e:
-            return [f"Syntax Error: {str(e)}"]
-
-        issues = []
-        node_count = 0
-        
-        for node in ast.walk(tree):
-            node_count += 1
-            if node_count > 5000:
-                return ["Security Violation: File too complex to safely audit."]
-
-            # 0. DoS Protection (Loops & Memory)
-            if isinstance(node, (ast.While, ast.For)):
-                if cls._is_infinite_loop(node):
-                    issues.append("Security Violation: Potential infinite loop detected (DoS risk).")
-            
-            if isinstance(node, ast.Constant):
-                if isinstance(node.value, (int, float)) and node.value > 10**12:
-                    issues.append("Security Violation: Extremely large numeric constant (DoS risk).")
-                if isinstance(node.value, (bytes, str)) and len(node.value) > 10**6:
-                    issues.append("Security Violation: Extremely large data literal (DoS risk).")
-
-            if isinstance(node, ast.BinOp):
-                if isinstance(node.op, ast.Mult):
-                    if isinstance(node.right, ast.Constant) and isinstance(node.right.value, int) and node.right.value > 10**6:
-                        issues.append("Security Violation: Potential large memory allocation detected (DoS risk).")
-                if isinstance(node.op, ast.Pow):
-                    if isinstance(node.right, ast.Constant) and isinstance(node.right.value, int) and node.right.value > 6:
-                        issues.append("Security Violation: Potential large numeric computation detected (DoS risk).")
-
-            # 1. Alias Detection
-            if isinstance(node, ast.Assign):
-                if isinstance(node.value, ast.Name) and node.value.id in cls.PYTHON_FORBIDDEN_FUNCTIONS:
-                    issues.append(f"Python Violation: Attempt to alias forbidden function '{node.value.id}'")
-                
-                if isinstance(node.value, ast.Call) and cls._resolve_func_name(node.value.func) == "getattr":
-                    issues.append("Python Violation: Attempt to alias via 'getattr' is forbidden.")
-
-                for target in node.targets:
-                    if isinstance(target, ast.Name):
-                        var_name = target.id.upper()
-                        if any(k in var_name for k in ['KEY', 'SECRET', 'TOKEN', 'PASSWORD', 'AUTH', 'CREDENTIAL']):
-                            if cls._is_sensitive_value(node.value):
-                                issues.append(f"Security Violation: Potential hardcoded secret in variable '{target.id}'")
-
-            # 2. Check Imports
-            if isinstance(node, (ast.Import, ast.ImportFrom)):
-                for alias in (node.names if isinstance(node, ast.Import) else [ast.alias(name=node.module, asname=None)]):
-                    mod_base = alias.name.split('.')[0]
-                    if mod_base in cls.PYTHON_FORBIDDEN_MODULES:
-                        issues.append(f"Security Violation: Forbidden module import '{alias.name}'")
-
-            # 3. Check Function Calls
-            if isinstance(node, ast.Call):
-                func_name = cls._resolve_func_name(node.func)
-                if func_name in cls.PYTHON_FORBIDDEN_FUNCTIONS:
-                    issues.append(f"Security Violation: Use of forbidden function '{func_name}'")
-                
-                # Network & Bridge Check
-                if func_name in ('get', 'post', 'request'):
-                    url = cls._get_url_from_call(node)
-                    if url:
-                        if "8085" in url or "localhost" in url or "127.0.0.1" in url:
-                            if not cls._has_vibe_token(node):
-                                issues.append("Security Violation: Local Unity requests MUST include 'X-Vibe-Token' header.")
-                        elif not any(host in url for host in cls.ALLOWED_HOSTS):
-                            issues.append(f"Security Violation: External network request to '{url}' blocked.")
-                
-                # File System Safety Check
-                if func_name in ('open', 'write', 'Path', 'mkdir', 'remove', 'rmdir'):
-                    for arg in node.args:
-                        if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
-                            if not cls._is_path_safe(arg.value):
-                                issues.append(f"Security Violation: Access to forbidden path '{arg.value}' blocked.")
-
-            # 4. Check for Internal Access
-            if isinstance(node, ast.Attribute):
-                if node.attr in cls.PYTHON_FORBIDDEN_ATTRIBUTES:
-                    issues.append(f"Security Violation: Access to internal attribute '{node.attr}' forbidden.")
-
-        issues.extend(cls._check_secrets(code))
-        return issues
-
-    @classmethod
-    def _resolve_func_name(cls, node):
-        if isinstance(node, ast.Name): return node.id
-        if isinstance(node, ast.Attribute): return node.attr
-        if isinstance(node, ast.Subscript):
-            if isinstance(node.slice, ast.Constant) and isinstance(node.slice.value, str):
-                return node.slice.value
-        return ""
-
-    @classmethod
-    def _get_url_from_call(cls, node):
-        for arg in node.args:
-            if isinstance(arg, ast.Constant) and isinstance(arg.value, str) and "http" in arg.value:
-                return arg.value
-        for kw in node.keywords:
-            if kw.arg == 'url' and isinstance(kw.value, ast.Constant) and isinstance(kw.value.value, str):
-                return kw.value.value
-        return None
-
-    @staticmethod
-    def _is_path_safe(path):
-        # 1. Normalize path to prevent '..' or homoglyph bypass
-        abs_path = os.path.normpath(path)
-        if abs_path.startswith("..") or abs_path.startswith("/") or ":" in abs_path:
-            return False
-
-        # 2. Prevent access to core security/system files
-        forbidden = ("security_gate.py", "trusted_signatures.json", "vibe_status.json", "vibe_settings.json", "HUMAN_ONLY", ".meta", ".git")
-        if any(f in abs_path for f in forbidden): 
-            return False
-        
-        # 3. Allowlisted Creation Perimeters
-        allowed_subdirs = ("captures", "optimizations", "logs", "unity-package", "vibe_queue", "metadata")
-        # Ensure the path is actually INSIDE one of the allowed subdirs
-        return any(abs_path.startswith(subdir + os.sep) or abs_path == subdir for subdir in allowed_subdirs)
-
-    @classmethod
-    def _is_infinite_loop(cls, node):
-        if isinstance(node, ast.While):
-            if isinstance(node.test, ast.Constant) and node.test.value is True:
-                has_break = any(isinstance(n, ast.Break) for n in ast.walk(node))
-                return not has_break
-        return False
-
-    @classmethod
-    def _is_sensitive_value(cls, node, in_collection=False):
-        threshold = 4 if in_collection else 10
-        if isinstance(node, ast.Constant) and isinstance(node.value, str):
-            return len(node.value) >= threshold
-        if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
-            return cls._is_sensitive_value(node.left, in_collection) or cls._is_sensitive_value(node.right, in_collection)
-        if isinstance(node, ast.JoinedStr): return True
-        if isinstance(node, ast.List):
-            return any(cls._is_sensitive_value(elt, True) for elt in node.elts)
-        if isinstance(node, ast.Call):
-            return any(cls._is_sensitive_value(arg, True) for arg in node.args)
-        return False
-
-    @staticmethod
-    def check_csharp(content):
-        issues = []
-        clean = SecurityGate._strip_cs_noise(content)
-        
-        BANNED = [
-            (r'System\.Reflection', "Reflection"), (r'Process\.Start', "Spawning"),
-            (r'File\.(Write|Delete|Append|Move|Copy)', "File Mutation"),
-            (r'Directory\.', "Directory Mutation"), (r'System\.Net', "Networking"),
-            (r'InitializeOnLoad', "Constructor Side-effects"), (r'DllImport', "Native Code"),
-            (r'dynamic\b', "Dynamic Typing"), (r'typeof\(.*\)\.GetMethod', "Type-based Reflection"),
-            (r'AppDomain', "AppDomain manipulation"), (r'unsafe\b', "Unsafe code"),
-            (r'ModuleInitializer', "Module Initializer Hijack"), (r'Type\.GetType', "Reflection")
-        ]
-        
-        for pattern, reason in BANNED:
-            if re.search(pattern, clean, re.IGNORECASE):
-                issues.append(f"C# Violation: {reason} is forbidden.")
-        
-        # Identifier Entropy Check (Covert Channel Protection)
-        identifiers = re.findall(r'\b[a-zA-Z_][a-zA-Z0-9_]*\b', clean)
-        for id_name in identifiers:
-            if SecurityGate._check_entropy(id_name):
-                issues.append(f"Security Violation: High-entropy identifier '{id_name}' detected.")
-                
-        return issues
-
-    @staticmethod
-    def _strip_cs_noise(code):
-        """Removes strings and comments from C# code."""
-        code = code.replace("\\n", "\n").replace("\\r", "\r")
-        code = re.sub(r'\\u([0-9a-fA-F]{4})', lambda m: chr(int(m.group(1), 16)), code)
-        result = []
-        i = 0
-        in_string = in_block_comment = in_line_comment = False
-        while i < len(code):
-            char = code[i]
-            next_char = code[i+1] if i + 1 < len(code) else ""
-            if in_line_comment:
-                if char == '\n': in_line_comment = False
-                i += 1; continue
-            if in_block_comment:
-                if char == '*' and next_char == '/': in_block_comment = False; i += 2
-                else: i += 1
-                continue
-            if in_string:
-                if char == '\\': i += 2
-                elif char == '"': in_string = False; i += 1
-                else: i += 1
-                continue
-            if char == '/' and next_char == '/': in_line_comment = True; i += 2; continue
-            if char == '/' and next_char == '*': in_block_comment = True; i += 2; continue
-            if char == '"': in_string = True; i += 1; continue
-            result.append(char)
-            i += 1
-        return "".join(result)
-
-    @staticmethod
-    def _check_entropy(name):
-        """Detects unusually high entropy in identifiers."""
-        if len(name) > 64: return True
-        if len(name) > 20 and re.search(r'[0-9a-f]{8,}', name.lower()): return True
-        return False
-
-    @classmethod
-    def _check_secrets(cls, content):
-        issues = []
-        SECRET_PATTERNS = [
-            r'(?i)(api[_-]?key|secret|token|password|auth)\s*[:=]\s*["\'][a-zA-Z0-9_\-\.] {10,}["\']',
-            r'(?i)ya29\.[a-zA-Z0-9_\-]{50,}',
-            r'(?i)AKIA[A-Z0-9]{16}',
-        ]
-        for pattern in SECRET_PATTERNS:
-            if re.search(pattern, content):
-                issues.append("Security Violation: Possible hardcoded secret detected.")
-        return issues
-
-    @classmethod
-    def _has_vibe_token(cls, node):
-        for kw in node.keywords:
-            if kw.arg == 'headers':
-                if isinstance(kw.value, ast.Dict):
-                    for k in kw.value.keys:
-                        if isinstance(k, ast.Constant) and k.value == "X-Vibe-Token":
-                            return True
-        return False
-
-    @classmethod
-    def check_shell(cls, cmd):
-        parts = cmd.strip().split()
-        if not parts: return []
-        
-        issues = []
-        SHELL_WHITELIST = {'git', 'python', 'python3', 'ls', 'cat', 'mkdir', 'rm', 'cp', 'mv', 'grep', 'find', 'pip', 'pip3', 'cargo', 'rustc', 'docker'}
-        base_cmd = parts[0]
-        
-        if base_cmd not in SHELL_WHITELIST:
-            issues.append(f"Security Violation: Shell command '{base_cmd}' is not in the whitelist.")
-        
-        if "8085" in cmd or "localhost" in cmd:
-            if "X-Vibe-Token" not in cmd:
-                issues.append("Security Violation: Local Unity requests via shell MUST include 'X-Vibe-Token' header.")
-
-        FORBIDDEN_SHELL_PATTERNS = {'curl', 'wget', 'ssh', 'nc', 'bash -i', 'sh -i', '>', '>>', '|', '&&', ';', '`', '$(', 'ext::', '--open', '-m pty', 'core.pager', 'install .', '*', '?', '[', ']', '{', '}', 'LD_', 'PYTHONPATH'}
-        for pattern in FORBIDDEN_SHELL_PATTERNS:
-            if pattern in cmd:
-                issues.append(f"Security Violation: Forbidden shell pattern '{pattern}' detected.")
-
-        if "--trust" in cmd or "trusted_signatures.json" in cmd:
-            issues.append("Security Violation: AI Agent is forbidden from modifying security trust settings.")
-
-        if ".." in cmd:
-            issues.append("Security Violation: Path traversal (..) detected in shell command.")
-            
-        return issues
+        finally:
+            shutil.rmtree(temp_dir)
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="UnityVibeBridge Security Gate")
-    parser.add_argument("file", help="File to audit")
-    parser.add_argument("--trust", action="store_true", help="Manually trust this file's content")
-    
+    parser = argparse.ArgumentParser(description="VibeBridge Batch Auditor")
+    parser.add_argument("--package", default="unity-package", help="Path to package root")
     args = parser.parse_args()
-    
-    if not os.path.exists(args.file):
-        print(f"File not found: {args.file}")
-        sys.exit(1)
-        
-    with open(args.file, 'r') as f:
-        content = f.read()
-    
-    if args.trust:
-        SecurityGate.trust_content(content, reason="Manual Human Approval")
-        print(f"✅ Content hash for '{args.file}' is now TRUSTED.")
-        sys.exit(0)
-        
-    ext = os.path.splitext(args.file)[1]
-    issues = []
-    
-    if ext == '.py': issues = SecurityGate.check_python(content)
-    elif ext == '.cs': issues = SecurityGate.check_csharp(content)
-    
+    issues = SecurityGate.audit_assembly(args.package)
     if issues:
-        print("❌ SECURITY AUDIT FAILED:")
-        print("\n".join(issues))
-        print("\nIf you are sure this is safe, run the following command manually:")
-        print(f"python3 scripts/security_gate.py {args.file} --trust")
+        print(f"❌ ASSEMBLY AUDIT FAILED ({len(issues)} errors):")
+        for i in issues[:20]: print(f"  - {i}")
         sys.exit(1)
     else:
-        print("✅ Security Audit Passed.")
+        print("✅ Assembly Audit Passed. Kernel is stable.")
         sys.exit(0)

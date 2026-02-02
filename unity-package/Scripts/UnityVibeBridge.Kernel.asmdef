@@ -1,0 +1,26 @@
+{
+    "name": "UnityVibeBridge.Kernel",
+    "rootNamespace": "UnityVibeBridge.Kernel",
+    "references": [
+        "Unity.EditorCoroutines.Editor",
+        "UniTask",
+        "MemoryPack"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.cysharp.memorypack",
+            "expression": "",
+            "define": "VIBE_MEMORYPACK"
+        }
+    ],
+    "noEngineReferences": false
+}

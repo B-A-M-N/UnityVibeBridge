@@ -48,7 +48,7 @@ class VibeLogger:
         with open(self.belief_path, "w") as f: json.dump(self.belief_ledger, f, indent=2)
 
     def log_intent(self, intent, details):
-        """Logs a high-level intent for Agent Alpha/Beta coordination."""
+        """Logs a high-level intent for system orchestration."""
         self.entropy_used += 1 # Every intent consumes entropy
         entry = {
             "timestamp": datetime.datetime.utcnow().isoformat(),

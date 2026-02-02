@@ -7,11 +7,12 @@ using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEngine;
 
-namespace VibeBridge {
+namespace UnityVibeBridge.Kernel {
     public static partial class VibeBridgeServer {
+        [VibeTool("engine/assembly/state", "Returns the current compilation and assembly load state.")]
         public static string VibeTool_engine_assembly_state(Dictionary<string, string> q) {
             var assemblies = CompilationPipeline.GetAssemblies();
-            var bridgeAssembly = assemblies.FirstOrDefault(a => a.name == "VibeBridge");
+            var bridgeAssembly = assemblies.FirstOrDefault(a => a.name == "UnityVibeBridge.Kernel");
             
             var res = new AssemblyStateRes {
                 assemblies_loaded = bridgeAssembly != null ? new AssemblyStateRes.AssemblyInfo[] {
@@ -27,6 +28,7 @@ namespace VibeBridge {
             return JsonUtility.ToJson(res);
         }
 
+        [VibeTool("engine/error/state", "Returns a structured report of all current project errors.")]
         public static string VibeTool_engine_error_state(Dictionary<string, string> q) {
             // Converts the internal _errors list into the structured invariant format
             var res = new ErrorStateRes {

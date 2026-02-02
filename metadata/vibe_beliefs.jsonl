@@ -1,0 +1,2 @@
+{"conclusion": "KERNEL_V1.2.3_ACTIVE", "provenance": ["system_init"], "confidence": 1.0, "expiry": 9999999999}
+{"conclusion": "UMP_IDENTITY_LOADED", "provenance": ["registry_init"], "confidence": 1.0, "expiry": 9999999999}

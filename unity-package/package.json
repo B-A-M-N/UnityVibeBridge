@@ -1,6 +1,6 @@
 {
   "name": "com.vibe.bridge",
-  "version": "1.2.1",
+  "version": "1.3.7",
   "displayName": "Unity Vibe Bridge",
   "description": "Mechanistic AI Agent Bridge for VRChat Avatar Rigging.",
   "unity": "2019.4",
@@ -8,8 +8,17 @@
     "name": "Vibe Coding Team"
   },
   "dependencies": {
-    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
-    "com.cysharp.memorypack": "https://github.com/Cysharp/MemoryPack.git?path=src/MemoryPack.Unity/Assets/Plugins/MemoryPack",
-    "com.unity.editorcoroutines": "1.0.0"
-  }
+    "com.unity.editorcoroutines": "1.0.0",
+    "com.cysharp.unitask": "2.5.4",
+    "com.cysharp.memorypack": "1.10.0"
+  },
+  "scopedRegistries": [
+    {
+      "name": "package.openupm.com",
+      "url": "https://package.openupm.com",
+      "scopes": [
+        "com.cysharp"
+      ]
+    }
+  ]
 }

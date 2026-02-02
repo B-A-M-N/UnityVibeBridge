@@ -7,8 +7,28 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace VibeBridge {
+namespace UnityVibeBridge.Kernel {
     public static partial class VibeBridgeServer {
+        [VibeTool("hierarchy", "Returns a paginated list of all GameObjects in the scene.", "page", "pageSize")]
+        public static string VibeTool_hierarchy(Dictionary<string, string> q) {
+            int page = q.ContainsKey("page") ? int.Parse(q["page"]) : 0;
+            int pageSize = q.ContainsKey("pageSize") ? int.Parse(q["pageSize"]) : 500;
+
+            var all = UnityEngine.Object.FindObjectsOfType<GameObject>(true)
+                .OrderBy(go => go.name).ToList();
+            
+            var paginated = all.Skip(page * pageSize).Take(pageSize)
+                .Select(o => new HierarchyRes.ObjectNode {
+                    name = o.name,
+                    id = o.GetInstanceID()
+                }).ToArray();
+            
+            return JsonUtility.ToJson(new HierarchyRes {
+                objects = paginated
+            });
+        }
+
+        [VibeTool("scene/state", "Returns a high-level summary of the active scene.")]
         public static string VibeTool_scene_state(Dictionary<string, string> q) {
             Scene activeScene = SceneManager.GetActiveScene();
             var roots = activeScene.GetRootGameObjects();
@@ -24,6 +44,7 @@ namespace VibeBridge {
             return JsonUtility.ToJson(res);
         }
 
+        [VibeTool("assets/state", "Returns the health of the AssetDatabase and optional file hashes.", "paths")]
         public static string VibeTool_assets_state(Dictionary<string, string> q) {
             var res = new AssetStateRes {
                 asset_db_state = "Healthy",

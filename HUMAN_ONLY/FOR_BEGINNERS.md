@@ -177,17 +177,6 @@ If you watch the AI work, you might see it talking about "Hashes," "WALs," or "M
 
 ---
 
-## 13. Working with AI Specialists (Mental Sandboxes)
-
-In high-scale projects, you might work with multiple AI "Specialists" instead of one general AI. This keeps your project stable by preventing "Engine Confusion."
-
-*   **The Unity Specialist**: Only knows about Unity. It doesn't know what Blender is. It focuses entirely on your materials, components, and scene.
-*   **The Blender Specialist**: Only knows about 3D modeling. It focuses on vertices and bones.
-*   **The Coordinator**: The "Brain" that manages the specialists. It makes sure the Blender changes and Unity changes stay synchronized using **UUIDs** (unique ID tags).
-
-**Why this helps you:** If the Unity AI tries to give you a Blender instruction, the system will mechanically reject it. This "Air Gap" prevents the AI from getting its wires crossed and breaking your rig.
-
----
 
 ## 14. Using Git to Stay Safe (Artist's Audit Trail)
 

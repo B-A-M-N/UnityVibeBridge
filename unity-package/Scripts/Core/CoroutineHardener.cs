@@ -3,7 +3,7 @@ using Unity.EditorCoroutines.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace VibeBridge.Core
+namespace UnityVibeBridge.Kernel.Core
 {
     public static class CoroutineHardener
     {

@@ -17,7 +17,7 @@ using UnityEngine.Networking;
 using System.Collections;
 using System.Threading;
 
-namespace VibeBridge.Tests
+namespace UnityVibeBridge.Kernel.Tests
 {
     public class VibeBridgeServerTests
     {

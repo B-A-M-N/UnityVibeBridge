@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using UnityEngine;
 
-namespace VibeBridge {
+namespace UnityVibeBridge.Kernel {
     public static partial class VibeBridgeServer {
         private static void LoadOrCreateSession() {
             string path = "metadata/vibe_session.json";

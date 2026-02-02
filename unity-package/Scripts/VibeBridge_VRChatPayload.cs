@@ -1,74 +1,108 @@
 #if UNITY_EDITOR
-// UnityVibeBridge: The Governed Creation Kernel for Unity
-// Copyright (C) 2026 B-A-M-N
-//
-// This software is dual-licensed under the GNU AGPLv3 and a 
-// Commercial "Work-or-Pay" Maintenance Agreement.
-
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using VibeBridge.Core;
-using Cysharp.Threading.Tasks;
 
-namespace VibeBridge {
+namespace UnityVibeBridge.Kernel {
     public static partial class VibeBridgeServer {
-
-        public static async UniTask<string> ExecuteVrcTool(string toolName, Dictionary<string, string> q) {
-            if (!Enum.TryParse(toolName.Replace("VibeTool_vrc_", ""), true, out ToolID toolID)) {
-                return JsonUtility.ToJson(new BasicRes { error = $"Unknown vrc tool: {toolName}" });
-            }
+        
+        [VibeTool("vrc/menu/add", "Adds a control to a VRChat Expressions Menu asset.", "path", "name", "type", "parameter")]
+        public static string VibeTool_vrc_menu_add(Dictionary<string, string> q) {
+            string assetPath = ResolveAssetPath(q["path"], "t:VRCExpressionsMenu");
+            if (string.IsNullOrEmpty(assetPath)) return JsonUtility.ToJson(new BasicRes { error = "Menu asset not found." });
 
             try {
-                await AsyncUtils.SwitchToMainThreadSafe();
+                System.Type menuType = AppDomain.CurrentDomain.GetAssemblies()
+                    .Select(a => a.GetType("VRC.SDK3.Avatars.ScriptableObjects.VRCExpressionsMenu"))
+                    .FirstOrDefault(t => t != null);
+
+                if (menuType == null) return JsonUtility.ToJson(new BasicRes { error = "VRChat SDK (VRCExpressionsMenu) not found." });
+
+                ScriptableObject menuAsset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(assetPath);
+                if (menuAsset == null || menuAsset.GetType() != menuType) return JsonUtility.ToJson(new BasicRes { error = "Invalid menu asset type." });
+
+                Undo.RecordObject(menuAsset, "Add VRC Menu Control");
+
+                var controlsField = menuType.GetField("controls");
+                var controls = controlsField.GetValue(menuAsset) as System.Collections.IList;
+                if (controls == null) return JsonUtility.ToJson(new BasicRes { error = "Could not access menu controls list." });
+                if (controls.Count >= 8) return JsonUtility.ToJson(new BasicRes { error = "Menu already has 8 controls (max)." });
+
+                System.Type controlClass = menuType.GetNestedType("Control");
+                object newControl = Activator.CreateInstance(controlClass);
+
+                controlClass.GetField("name").SetValue(newControl, q["name"]);
+                
+                System.Type controlTypeEnum = controlClass.GetNestedType("ControlType");
+                object typeValue = Enum.Parse(controlTypeEnum, q["type"], true);
+                controlClass.GetField("type").SetValue(newControl, typeValue);
+
+                var paramClass = controlClass.GetNestedType("Parameter");
+                object paramObj = Activator.CreateInstance(paramClass);
+                paramClass.GetField("name").SetValue(paramObj, q["parameter"]);
+                controlClass.GetField("parameter").SetValue(newControl, paramObj);
+
+                controls.Add(newControl);
+                EditorUtility.SetDirty(menuAsset);
+                AssetDatabase.SaveAssets();
+
+                return JsonUtility.ToJson(new BasicRes { message = $"Added {q["name"]} to menu." });
             } catch (Exception e) {
-                return JsonUtility.ToJson(new BasicRes { error = $"Concurrency Failure: {e.Message}" });
+                return JsonUtility.ToJson(new BasicRes { error = "VRC Menu Add failed: " + e.Message });
             }
-
-            return toolName switch {
-                "VibeTool_vrc_menu_add" => VibeTool_vrc_menu_add(q),
-                "VibeTool_vrc_params_add" => VibeTool_vrc_params_add(q),
-                _ => JsonUtility.ToJson(new BasicRes { error = "Tool not mapped." })
-            };
-        }
-        
-        public static string VibeTool_vrc_menu_add(Dictionary<string, string> q) {
-            UnityEngine.Object asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(q["path"]);
-            if (asset == null) return JsonUtility.ToJson(new BasicRes { error = "Menu asset not found" });
-            
-            var so = new SerializedObject(asset);
-            var controls = so.FindProperty("controls");
-            controls.InsertArrayElementAtIndex(controls.arraySize);
-            
-            var ctrl = controls.GetArrayElementAtIndex(controls.arraySize - 1);
-            ctrl.FindPropertyRelative("name").stringValue = q["name"];
-            ctrl.FindPropertyRelative("type").enumValueIndex = int.Parse(q["type"]); // 0=Button, 1=Toggle, etc.
-            ctrl.FindPropertyRelative("parameter").FindPropertyRelative("name").stringValue = q["parameter"];
-            
-            so.ApplyModifiedProperties();
-            EditorUtility.SetDirty(asset);
-            return JsonUtility.ToJson(new BasicRes { message = "Control added to menu" });
         }
 
+        [VibeTool("vrc/params/add", "Adds a parameter to a VRChat Expression Parameters asset.", "path", "name", "type", "saved", "default")]
         public static string VibeTool_vrc_params_add(Dictionary<string, string> q) {
-            UnityEngine.Object asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(q["path"]);
-            if (asset == null) return JsonUtility.ToJson(new BasicRes { error = "Params asset not found" });
-            
-            var so = new SerializedObject(asset);
-            var parameters = so.FindProperty("parameters");
-            parameters.InsertArrayElementAtIndex(parameters.arraySize);
-            
-            var param = parameters.GetArrayElementAtIndex(parameters.arraySize - 1);
-            param.FindPropertyRelative("name").stringValue = q["name"];
-            param.FindPropertyRelative("valueType").enumValueIndex = int.Parse(q["type"]); // 0=Float, 1=Int, 2=Bool
-            param.FindPropertyRelative("saved").boolValue = true;
-            
-            so.ApplyModifiedProperties();
-            EditorUtility.SetDirty(asset);
-            return JsonUtility.ToJson(new BasicRes { message = "Parameter added to asset" });
+            string assetPath = ResolveAssetPath(q["path"], "t:VRCExpressionParameters");
+            if (string.IsNullOrEmpty(assetPath)) return JsonUtility.ToJson(new BasicRes { error = "Parameters asset not found." });
+
+            try {
+                System.Type paramsType = AppDomain.CurrentDomain.GetAssemblies()
+                    .Select(a => a.GetType("VRC.SDK3.Avatars.ScriptableObjects.VRCExpressionParameters"))
+                    .FirstOrDefault(t => t != null);
+
+                if (paramsType == null) return JsonUtility.ToJson(new BasicRes { error = "VRChat SDK (VRCExpressionParameters) not found." });
+
+                ScriptableObject paramsAsset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(assetPath);
+                if (paramsAsset == null || paramsAsset.GetType() != paramsType) return JsonUtility.ToJson(new BasicRes { error = "Invalid parameters asset type." });
+
+                Undo.RecordObject(paramsAsset, "Add VRC Parameter");
+
+                var parametersField = paramsType.GetField("parameters");
+                var parametersArray = parametersField.GetValue(paramsAsset) as Array;
+                
+                System.Type paramClass = paramsType.GetNestedType("Parameter");
+                object newParam = Activator.CreateInstance(paramClass);
+
+                paramClass.GetField("name").SetValue(newParam, q["name"]);
+                
+                System.Type valueTypeEnum = paramClass.GetNestedType("ValueType");
+                object typeValue = Enum.Parse(valueTypeEnum, q["type"], true);
+                paramClass.GetField("valueType").SetValue(newParam, typeValue);
+
+                if (q.ContainsKey("saved")) paramClass.GetField("saved").SetValue(newParam, q["saved"].ToLower() == "true");
+                if (q.ContainsKey("default")) {
+                    float defaultVal = float.Parse(q["default"]);
+                    paramClass.GetField("defaultValue").SetValue(newParam, defaultVal);
+                }
+
+                // Resize array
+                var newArray = Array.CreateInstance(paramClass, parametersArray.Length + 1);
+                Array.Copy(parametersArray, newArray, parametersArray.Length);
+                newArray.SetValue(newParam, parametersArray.Length);
+                
+                parametersField.SetValue(paramsAsset, newArray);
+
+                EditorUtility.SetDirty(paramsAsset);
+                AssetDatabase.SaveAssets();
+
+                return JsonUtility.ToJson(new BasicRes { message = $"Added parameter {q["name"]} to asset." });
+            } catch (Exception e) {
+                return JsonUtility.ToJson(new BasicRes { error = "VRC Params Add failed: " + e.Message });
+            }
         }
     }
 }

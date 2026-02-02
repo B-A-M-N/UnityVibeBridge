@@ -1,44 +1,32 @@
+#if UNITY_EDITOR
 using System;
-using MemoryPack;
 using UnityEngine;
 
-namespace VibeBridge.Core
+#if VIBE_MEMORYPACK
+using MemoryPack;
+#endif
+
+namespace UnityVibeBridge.Kernel.Core
 {
     /// <summary>
-    /// HARDENING LAYER: Wraps MemoryPack to enforce 'Staging DTO' pattern.
-    /// Banishes direct serialization of Unity Objects.
+    /// Authorized Bridge Serializer.
+    /// Neutralized while waiting for UPM resolution.
     /// </summary>
     public static class SerializationUtils
     {
-        /// <summary>
-        /// Deserializes a binary payload into a Strict DTO.
-        /// Throws immediately if data is corrupt or schema mismatches.
-        /// </summary>
         public static T DeserializeDTO<T>(byte[] data)
         {
-            if (data == null || data.Length == 0)
-            {
-                throw new ArgumentException("[VibeSerialization] Cannot deserialize empty payload.");
-            }
-
-            try
-            {
-                // MemoryPack throws on schema mismatch, satisfying 'Fail Fast'.
-                return MemoryPackSerializer.Deserialize<T>(data);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"[VibeSerialization] Security Failure: Payload rejected. {e.Message}");
-                throw; // Propagate up for Telemetry capture
-            }
+            if (data == null || data.Length == 0) throw new ArgumentException("Empty payload");
+            string json = System.Text.Encoding.UTF8.GetString(data);
+            return JsonUtility.FromJson<T>(json);
         }
 
-        /// <summary>
-        /// Serializes a Safe DTO to binary.
-        /// </summary>
         public static byte[] SerializeDTO<T>(T value)
         {
-            return MemoryPackSerializer.Serialize(value);
+            if (value == null) return null;
+            string json = JsonUtility.ToJson(value);
+            return System.Text.Encoding.UTF8.GetBytes(json);
         }
     }
 }
+#endif

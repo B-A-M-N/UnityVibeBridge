@@ -15,25 +15,38 @@ except ImportError:
     sys.path.append(os.getcwd())
     from scripts.security_gate import SecurityGate
 
+from .sentinel import BinarySentinel
+
 class UnityAirlock:
-    def __init__(self, project_path, logger):
+    def __init__(self, project_path, logger, workspace=None):
         self.project_path = project_path
         self.logger = logger
+        self.workspace = workspace
+        # Paths are now resolved relative to the active project path provided by the engine
         self.inbox = os.path.join(project_path, "vibe_queue", "inbox")
         self.outbox = os.path.join(project_path, "vibe_queue", "outbox")
         self.status_file = os.path.join(project_path, "metadata", "vibe_status.json")
         self.health_file = os.path.join(project_path, "metadata", "vibe_health.json")
+        
+        self.sentinel = BinarySentinel(project_path, logger)
+        self.sentinel.verify()
 
     def _audit_payload(self, path, params):
         """Performs recursive in-memory AST and keyword analysis on tool parameters."""
         if not params: return []
         issues = []
         
+        # Get all allowed roots from the workspace
+        safe_zones = self.workspace.get_safe_zones() if self.workspace else [os.getcwd()]
+        
         # 1. Scan all string parameters for C# and general security violations
         for key, value in params.items():
             if isinstance(value, str):
                 # Check for C# forbidden patterns (Reflection, etc.)
                 issues.extend(SecurityGate.check_csharp(value))
+                # Check for path safety across all zones
+                if not SecurityGate._is_path_safe(value, safe_zones):
+                     issues.append(f"Security Violation: Access to forbidden path '{value}' blocked.")
                 # Check for sensitive secret patterns
                 issues.extend(SecurityGate._check_secrets(value))
                 
@@ -53,6 +66,16 @@ class UnityAirlock:
     def request(self, path, params=None, is_mutation=False, intent=None):
         """Secure AIRLOCK IPC with Triple-Lock, In-Process Auditing, and Smart-Wait."""
         
+        # --- LAYER -1: BINARY SENTINEL (Outside-In Integrity) ---
+        if is_mutation and not self.sentinel.is_verified:
+            report = self.sentinel.get_status_report()
+            return json.dumps({
+                "error": "INTEGRITY_FAILURE",
+                "mode": report["mode"],
+                "details": report["error"],
+                "message": "Mutation blocked: Binary Integrity check failed (Possible tampering)."
+            })
+
         # --- LAYER 0: PRE-FLIGHT SECURITY GATE ---
         if is_mutation:
             audit_errors = self._audit_payload(path, params)
