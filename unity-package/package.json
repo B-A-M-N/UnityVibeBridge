@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "com.unity.editorcoroutines": "1.0.0",
-    "com.cysharp.unitask": "2.5.4",
     "com.cysharp.memorypack": "1.10.0"
   },
   "scopedRegistries": [
