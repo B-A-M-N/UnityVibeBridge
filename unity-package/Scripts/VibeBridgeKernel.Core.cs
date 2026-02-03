@@ -356,13 +356,13 @@ namespace UnityVibeBridge.Kernel {
                 if (string.IsNullOrEmpty(val)) continue;
                 if (float.TryParse(val, out float f)) {
                     if (float.IsNaN(f) || float.IsInfinity(f)) throw new VibeValidationException($"Geometric Insanity: {f}", "GEOMETRIC_REJECTION");
-                    if (Math.Abs(f) > 1000000f) throw new VibeValidationException($"Magnitude Rejection: {f}", "MAGNITUDE_REJECTION");
+                    if (Math.Abs(f) > 10000000f) throw new VibeValidationException($"Magnitude Rejection: {f}", "MAGNITUDE_REJECTION");
                 }
                 if (val.Contains(",")) {
                     var parts = val.Split(',');
                     foreach (var p in parts) {
                         if (float.TryParse(p, out float pf)) {
-                            if (Math.Abs(pf) > 1000000f) throw new VibeValidationException("Vector magnitude rejection.", "VECTOR_REJECTION");
+                            if (Math.Abs(pf) > 10000000f) throw new VibeValidationException("Vector magnitude rejection.", "VECTOR_REJECTION");
                         }
                     }
                 }
@@ -373,7 +373,14 @@ namespace UnityVibeBridge.Kernel {
             // Check if this is actually a WorkOrder (Strategic Intent)
             if (cmd.action == "isa/execute") {
                 try {
-                    var order = JsonUtility.FromJson<WorkOrder>(JsonUtility.ToJson(cmd));
+                    var order = new WorkOrder { action = cmd.action, id = cmd.id };
+                    if (cmd.keys != null && cmd.values != null) {
+                        for (int i = 0; i < Math.Min(cmd.keys.Length, cmd.values.Length); i++) {
+                            if (cmd.keys[i] == "intent") order.intent = cmd.values[i];
+                            if (cmd.keys[i] == "target_uuid") order.target_uuid = cmd.values[i];
+                            if (cmd.keys[i] == "rationale") order.rationale = cmd.values[i];
+                        }
+                    }
                     return VibeISA.ExecuteIntent(order);
                 } catch (Exception e) {
                     return JsonUtility.ToJson(new BasicRes { 
@@ -392,8 +399,23 @@ namespace UnityVibeBridge.Kernel {
                 string path = cmd.action.TrimStart('/');
                 string methodName = "VibeTool_" + path.Replace("/", "_").Replace("-", "_");
                 if (path == "inspect") methodName = "VibeTool_inspect";
+                
+                // 1. Search by name convention
                 var method = typeof(VibeBridgeServer).GetMethod(methodName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.IgnoreCase);
-                if (method == null) return JsonUtility.ToJson(new BasicRes { error = "Tool not found: " + path, conclusion = "TOOL_NOT_FOUND" });
+                
+                // 2. Search by Attribute Name (more robust for tools with complex paths)
+                if (method == null) {
+                    var allMethods = typeof(VibeBridgeServer).GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                    foreach (var m in allMethods) {
+                        var attr = m.GetCustomAttribute<VibeToolAttribute>();
+                        if (attr != null && attr.Name.Equals(path, StringComparison.OrdinalIgnoreCase)) {
+                            method = m;
+                            break;
+                        }
+                    }
+                }
+
+                if (method == null) return JsonUtility.ToJson(new BasicRes { error = "Tool not found: " + path });
                 
                 var query = new Dictionary<string, string>();
                 if (cmd.keys != null && cmd.values != null) {

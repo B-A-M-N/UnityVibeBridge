@@ -4,7 +4,12 @@
     "references": [
         "Unity.EditorCoroutines.Editor",
         "UniTask",
-        "MemoryPack"
+        "MemoryPack",
+        "glTFast",
+        "glTFast.Export",
+        "Unity.Formats.Fbx.Runtime",
+        "Unity.Formats.Fbx.Editor",
+        "Autodesk.Fbx"
     ],
     "includePlatforms": [
         "Editor"

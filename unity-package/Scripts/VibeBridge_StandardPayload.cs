@@ -251,27 +251,76 @@ namespace UnityVibeBridge.Kernel {
             return JsonUtility.ToJson(new BasicRes { message = $"Param {name} set to {val}" });
         }
 
-        [VibeTool("system/reset-transforms", "Resets position to 0, rotation to 0, and scale to 1,1,1.", "path")]
+        [VibeTool("system/reset-transforms", "Resets position to 0, rotation to 0, and scale to 1,1,1 (Reinforced Rig Safety).", "path")]
         public static string VibeTool_system_reset_transforms(Dictionary<string, string> q) {
             try {
                 GameObject go = Resolve(q["path"]);
                 if (go == null) return JsonUtility.ToJson(new BasicRes { error = "Target not found." });
+                Debug.Log($"[VibeBridge] Starting Rig-Safe Reset on {go.name}");
                 
-                Undo.RecordObject(go.transform, "Reset Transform");
+                // --- CONTRACT ENFORCEMENT: IDENTIFY EXCLUSION ZONE (BONES) ---
+                var blacklist = RigSafetyGate.GetRigBones(go);
+
+                Undo.IncrementCurrentGroup();
+                Undo.SetCurrentGroupName("Reinforced Rig-Safe Reset");
+                int group = Undo.GetCurrentGroup();
+
+                // 1. Reset the Root (Explicitly allowed by Contract Rule 2)
+                Undo.RecordObject(go.transform, "Reset Root");
                 go.transform.localPosition = Vector3.zero;
                 go.transform.localEulerAngles = Vector3.zero;
                 go.transform.localScale = Vector3.one;
 
-                var children = go.GetComponentsInChildren<Transform>(true);
-                foreach (var t in children) {
+                // 2. Targeted traversal (MESHES ONLY)
+                var allTransforms = go.GetComponentsInChildren<Transform>(true);
+                int count = 0;
+                int skipped = 0;
+                foreach (var t in allTransforms) {
                     if (t == go.transform) continue;
-                    Undo.RecordObject(t, "Reset Child Transform");
+                    
+                    // --- THE FIREWALL (Contract Rule 1) ---
+                    if (blacklist.Contains(t)) {
+                        skipped++;
+                        continue; 
+                    }
+
+                    // Safety Check: We ONLY reset objects that are explicitly Renderers (Meshes).
+                    // This prevents us from accidentally resetting armature root or other non-mesh utility nodes.
+                    if (t.GetComponent<Renderer>() == null) {
+                        skipped++;
+                        continue;
+                    }
+
+                    Undo.RecordObject(t, "Reset Mesh Container");
                     t.localPosition = Vector3.zero;
                     t.localEulerAngles = Vector3.zero;
                     t.localScale = Vector3.one;
+                    count++;
                 }
                 
-                return JsonUtility.ToJson(new BasicRes { message = "Transforms reset to identity." });
+                Undo.CollapseUndoOperations(group);
+                Debug.Log($"[VibeBridge] Reset {count} meshes, skipped {skipped} rig objects.");
+                return JsonUtility.ToJson(new BasicRes { message = "Transforms reset (MAX_SAFETY_ENFORCED)." });
+            } catch (Exception e) { return JsonUtility.ToJson(new BasicRes { error = e.Message }); }
+        }
+
+        [VibeTool("system/reset-blendshapes", "Resets all blendshapes on a target and its children to 0.", "path")]
+        public static string VibeTool_system_reset_blendshapes(Dictionary<string, string> q) {
+            try {
+                GameObject go = Resolve(q["path"]);
+                if (go == null) return JsonUtility.ToJson(new BasicRes { error = "Target not found." });
+                
+                var smrs = go.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+                int count = 0;
+                foreach (var smr in smrs) {
+                    Undo.RecordObject(smr, "Reset BlendShapes");
+                    for (int i = 0; i < smr.sharedMesh.blendShapeCount; i++) {
+                        smr.SetBlendShapeWeight(i, 0);
+                    }
+                    count++;
+                }
+                
+                return JsonUtility.ToJson(new BasicRes { message = $"Reset blendshapes on {count} SkinnedMeshRenderers." });
             } catch (Exception e) { return JsonUtility.ToJson(new BasicRes { error = e.Message }); }
         }
 
@@ -409,15 +458,18 @@ namespace UnityVibeBridge.Kernel {
         
                 [VibeTool("system/list-tools", "Returns a list of all available VibeBridge tools.")]
                 public static string VibeTool_system_list_tools(Dictionary<string, string> q) {
-                    var tools = new List<string>();
+                    var tools = new List<BasicRes>();
                     var methods = typeof(VibeBridgeServer).GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
                     foreach (var m in methods) {
                         if (m.Name.StartsWith("VibeTool_")) {
                             var attr = m.GetCustomAttribute<VibeToolAttribute>();
-                            tools.Add(attr != null ? attr.Name : m.Name.Replace("VibeTool_", "").Replace("_", "/"));
+                            tools.Add(new BasicRes { 
+                                message = attr != null ? attr.Name : m.Name.Replace("VibeTool_", "").Replace("_", "/"),
+                                error = attr != null ? attr.Description : ""
+                            });
                         }
                     }
-                    return JsonUtility.ToJson(new ToolListRes { tools = tools.ToArray() });
+                    return JsonUtility.ToJson(new FindRes { results = tools.ToArray() });
                 }
         
                 [VibeTool("transaction/begin", "Starts a new undo group for atomic operations.", "name")]

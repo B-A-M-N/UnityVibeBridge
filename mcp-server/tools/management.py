@@ -41,18 +41,23 @@ def register_management_tools(engine):
     @mcp.tool()
     def mutate_script(path: str, code: str) -> str:
         """
-        [HARDENED] Writes a C# script to the project after performing a mandatory Roslyn audit.
-        Triggers AssetDatabase.Refresh() automatically on success.
+        [HARDENED] Writes a C# or Python script to the project after performing a mandatory security audit.
+        Triggers AssetDatabase.Refresh() automatically on success for Unity assets.
         """
         from scripts.security_gate import SecurityGate
         
-        # 1. Mandatory Pre-Flight Roslyn Audit
-        errors = SecurityGate.check_csharp(code)
+        # 1. Mandatory Pre-Flight Security Audit
+        errors = []
+        if path.endswith(".cs"):
+            errors = SecurityGate.check_csharp(code)
+        elif path.endswith(".py"):
+            errors = SecurityGate.check_python(code)
+        
         if errors:
             return json.dumps({
-                "error": "ROSLYN_AUDIT_FAILED",
+                "error": "SECURITY_AUDIT_FAILED",
                 "details": errors,
-                "message": "Write blocked: C# code contains compilation errors."
+                "message": f"Write blocked: '{path}' failed security or syntax audit."
             })
 
         # 2. Write to disk
@@ -67,7 +72,7 @@ def register_management_tools(engine):
         if path.endswith(".cs") or path.endswith(".meta"):
             engine.unity_request("system/refresh")
             
-        return f"Script written successfully to {path}. Unity refresh triggered."
+        return f"Script written successfully to {path}. Unity refresh triggered if applicable."
 
     @mcp.tool()
     def list_workspace_peers() -> str:

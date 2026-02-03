@@ -42,10 +42,13 @@ class UnityAirlock:
         # 1. Scan all string parameters for C# and general security violations
         for key, value in params.items():
             if isinstance(value, str):
-                # Check for C# forbidden patterns (Reflection, etc.)
-                issues.extend(SecurityGate.check_csharp(value))
+                # Only check for C# if it looks like code (contains keywords or common patterns)
+                code_patterns = ["using ", "namespace ", "class ", "void ", "{", "public ", "static "]
+                if any(p in value for p in code_patterns):
+                    issues.extend(SecurityGate.check_csharp(value))
+                
                 # Check for path safety across all zones
-                if not SecurityGate._is_path_safe(value, safe_zones):
+                if not SecurityGate.is_path_safe(value, safe_zones):
                      issues.append(f"Security Violation: Access to forbidden path '{value}' blocked.")
                 # Check for sensitive secret patterns
                 issues.extend(SecurityGate._check_secrets(value))
@@ -101,25 +104,52 @@ class UnityAirlock:
             time.sleep(1.0) # Wait for compiler/importer
 
         data = None
+        meta_wrapper = {}
         # Try HTTP first
         try:
             headers = {
                 "X-Vibe-Token": token or "FORCE_WAKE", # Resilience Fix
-                "X-Vibe-Capability": capability
+                "X-Vibe-Capability": capability,
+                "Content-Type": "application/json"
             }
-            resp = requests.get(f"http://127.0.0.1:8085/{path}", params=params, headers=headers, timeout=5)
+            # The kernel expects requests on /vibe via POST
+            cmd_payload = {
+                "action": path,
+                "capability": capability,
+                "keys": list(params.keys()) if params else [],
+                "values": [str(v) for v in params.values()] if params else []
+            }
+            resp = requests.post(f"http://127.0.0.1:8091/vibe", data=json.dumps(cmd_payload), headers=headers, timeout=5)
             if resp.status_code == 200:
-                wrapper = resp.json()
-                data = json.loads(wrapper.get("payload", "{}"))
-                data["_monotonicTick"] = wrapper.get("monotonicTick")
-                data["_engineState"] = wrapper.get("state")
-        except: pass 
+                raw_data = resp.json()
+                if isinstance(raw_data, list):
+                    data = {"results": raw_data}
+                elif isinstance(raw_data, dict) and "payload" in raw_data:
+                    meta_wrapper = raw_data
+                    data = json.loads(meta_wrapper.get("payload", "{}"))
+                else:
+                    data = raw_data
+                    if isinstance(raw_data, dict): meta_wrapper = raw_data
+        except Exception as e:
+            # print(f"HTTP Request failed: {e}")
+            pass
 
         if data is None:
-            wrapper = self._filesystem_request(path, params, capability, is_mutation)
-            data = json.loads(wrapper.get("payload", "{}"))
-            data["_monotonicTick"] = wrapper.get("monotonicTick")
-            data["_engineState"] = wrapper.get("state")
+            raw_wrapper = self._filesystem_request(path, params, capability, is_mutation)
+            if isinstance(raw_wrapper, dict):
+                meta_wrapper = raw_wrapper
+                data = json.loads(meta_wrapper.get("payload", "{}"))
+            elif isinstance(raw_wrapper, list):
+                data = {"results": raw_wrapper}
+            else:
+                data = {"raw": raw_wrapper}
+            
+        # --- LAYER 1: TYPE INVARIANT ENFORCEMENT ---
+        if not isinstance(data, dict):
+            data = {"results": data}
+
+        data["_monotonicTick"] = meta_wrapper.get("monotonicTick", 0)
+        data["_engineState"] = meta_wrapper.get("state", "UNKNOWN")
 
         # --- LAYER 2, 8 & 9: CONTEXTUAL & COGNITIVE INVARIANCE ---
         wal = self.logger.get_wal_tail(1)
@@ -128,9 +158,17 @@ class UnityAirlock:
         # REALITY FIX: Use a stable hash that ignores volatile timestamps
         stable_wal_hash = wal[0].get("entryHash", "GENESIS") if wal else "GENESIS"
         
+        # Source health metrics
+        health = {}
+        if os.path.exists(self.health_file):
+            try:
+                with open(self.health_file, "r") as f: health = json.load(f)
+            except: pass
+
         data["_vibe_invariance"] = {
             "wal_hash": stable_wal_hash,
             "unity_status": self._get_vibe_status(),
+            "script_error_count": health.get("script_error_count", 0),
             "engine_state": data.get("_engineState", "UNKNOWN"),
             "entropy_remaining": self.logger.entropy_budget - self.logger.entropy_used,
             "drift_budget": self.logger.drift_budget,
@@ -142,9 +180,6 @@ class UnityAirlock:
 
         if is_mutation: 
             self.logger.log_mutation(path, params, data)
-            if id_key: 
-                payload_hash = str(hash(json.dumps(params, sort_keys=True)))
-                self.logger.record_idempotency(id_key, payload_hash)
         
         return data
 

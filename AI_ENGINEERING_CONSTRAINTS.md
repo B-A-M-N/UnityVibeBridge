@@ -62,4 +62,12 @@ All code generation and AI operations for this project MUST strictly adhere to t
 
 ---
 
+## 6. 🚫 Model Behavior & Anti-Bypass Mandates
+1.  **SCRIPT-BYPASS PROHIBITION**: AI Agents are **STRICTLY FORBIDDEN** from creating or running standalone Python scripts (e.g. `check_errors.py`, `inspect_candidates.py`) to interact with the Unity Bridge on port 8085. All interactions MUST occur through registered MCP tools.
+2.  **MANDATORY ERROR AWARENESS**: Every tool response contains a `_vibe_invariance` block. The agent MUST inspect the `script_error_count` in this block after EVERY tool call.
+3.  **REACTIONARY INVARIANCE**: If `script_error_count > 0`, the agent **MUST STOP ALL MUTATIONS** and immediately call `telemetry/get/errors` to diagnose the failure. Ignoring a non-zero error count is a Critical Invariance Failure.
+4.  **NO SHELL-BASED CREATION**: Never use `echo` or `cat` to create `.cs` or `.py` files to bypass the `mutate_script` security gate. The `mutate_script` tool is the ONLY authorized way to write code to the project.
+
+---
+
 **VIOLATION OF THESE CONSTRAINTS CONSTITUTES AN IMMEDIATE SYSTEM RISK.**

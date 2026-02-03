@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -25,8 +26,51 @@ namespace UnityVibeBridge.Kernel.Core {
                     return Intent_SafeMutate(order);
                 case "ISA_REFLECTION_SET":
                     return Intent_ReflectionBatch(order);
+                case "NORMALIZE_AND_EXPORT_FBX":
+                    return Intent_NormalizeAndExportFBX(order);
                 default:
                     return "{\"error\":\"Intent not recognized by ISA v1.1\"}";
+            }
+        }
+
+        private static string Intent_NormalizeAndExportFBX(WorkOrder order) {
+            try {
+                // 1. Resolve Target
+                GameObject go = VibeMetadataProvider.ResolveRole(order.target_uuid) ?? GameObject.Find("ExtoPc");
+                if (go == null) return "{\"error\":\"Target for export not found.\"}";
+
+                // 4. Export via Reflection
+                string dest = "Export_Blender/" + go.name + "_ISA.fbx";
+                string fullPath = Path.Combine(Directory.GetCurrentDirectory(), dest);
+                
+                Type exporterType = null;
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+                    if (assembly.GetName().Name.Contains("Fbx.Editor")) {
+                        exporterType = assembly.GetType("UnityEditor.Formats.Fbx.Exporter.ModelExporter");
+                        if (exporterType != null) break;
+                    }
+                }
+
+                Debug.Log($"[ISA] ExporterType Found: {exporterType != null}");
+
+                if (exporterType == null) return "{\"error\":\"FBX Exporter assembly not found.\"}";
+
+                // Robust Method Discovery
+                var exportMethod = exporterType.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                    .FirstOrDefault(m => m.Name == "ExportObject" && m.GetParameters().Length == 2 && m.GetParameters()[0].ParameterType == typeof(string));
+
+                Debug.Log($"[ISA] ExportMethod Found: {exportMethod != null}");
+
+                if (exportMethod == null) return "{\"error\":\"ExportObject method not found in ModelExporter.\"}";
+
+                exportMethod.Invoke(null, new object[] { fullPath, go });
+
+                return JsonUtility.ToJson(new BasicRes { 
+                    conclusion = "ISA_EXPORT_COMPLETE", 
+                    message = $"Successfully exported {go.name} to {dest} via ISA Reflection."
+                });
+            } catch (Exception e) {
+                return "{\"error\":\"ISA Export Failed: " + (e.InnerException?.Message ?? e.Message) + "\"}";
             }
         }
 

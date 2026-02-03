@@ -22,10 +22,13 @@ graph LR
 Agents must follow a strict execution lifecycle to ensure state integrity:
 1. **Discover**: `get_hierarchy` / `search_objects` -> Build scene map.
 2. **Verify**: `inspect_object` -> Prove assumptions about components.
-3. **Protect**: `begin_transaction` -> Create an undo safety net and record current Git HEAD.
-4. **Execute**: `rename` / `set_value` / `clone` -> Perform the mutation via hardened Async tools.
-5. **Observe**: Check `_vibe_warning` in the response for project errors.
+3. **Protect**: `begin_transaction` -> Create an undo safety net.
+4. **Execute**: `rename` / `set_value` / `clone` -> Perform mutation via hardened tools.
+5. **Observe**: **MANDATORY** check of `script_error_count` in the tool response. If count > 0, the agent MUST stop and call `get_telemetry_errors` before proceeding.
 6. **Finalize**: `commit_transaction` (Requires Rationale, State Hash, Tick, and Git Hash).
+
+### 🚫 Script Bypass Prohibition
+Agents are **STRICTLY FORBIDDEN** from creating standalone Python scripts to talk to Port 8085. All interactions MUST use the registered MCP tools. This ensures every action is audited, logged, and safe.
 
 ### Core Safety Layers
 1. **The Kernel Guard**: Mechanically blocks mutations during **Compilation**, **Play Mode**, or **Asset Import**. Check `metadata/vibe_status.json` before any mutation.
